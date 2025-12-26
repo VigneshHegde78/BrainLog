@@ -1,51 +1,112 @@
-# Welcome to your Expo app 👋
+<div align="center">
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+  <h1>Brain.log 🧠</h1>
+  
+  <p>
+    <strong>Your Personal Second Brain.</strong>
+  </p>
 
-## Get started
+  <p>
+    A minimalist, distraction-free app designed to capture your thoughts, lists, and big ideas instantly. 
+    <b>No cloud, no logins, no lag.</b>
+  </p>
 
-1. Install dependencies
+  <p>
+    <a href="#features">Features</a> •
+    <a href="#tech-stack">Tech Stack</a> •
+    <a href="#getting-started">Getting Started</a> •
+    <a href="#roadmap">Roadmap</a>
+  </p>
 
-   ```bash
-   npm install
-   ```
+  <img src="https://img.shields.io/badge/status-active_development-green?style=flat-square" alt="Status" />
+  <img src="https://img.shields.io/badge/platform-android%20%7C%20ios-blue?style=flat-square" alt="Platform" />
 
-2. Start the app
+</div>
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🧐 About The Project
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Most note-taking apps are too complicated. They ask you to sign up, sync to a cloud, and navigate cluttered menus just to write down a grocery list or a brilliant idea.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+**Brain.log** returns to basics. It is a digital pocket notebook that respects your privacy.
+* **Writers:** Draft chapters or character ideas.
+* **Students:** Take quick class notes without Wi-Fi.
+* **Everyone:** Keep track of to-do lists, journals, and daily reminders.
 
-## Get a fresh project
+It uses **Markdown**, so your notes are clean, readable, and future-proof.
 
-When you're ready, run:
+## ⚡ Features
 
-```bash
-npm run reset-project
-```
+* **🔒 Private & Offline:** Your data lives 100% on your device. No tracking, no servers.
+* **📝 Markdown Support:** formatting made easy. Use bold, italics, lists, and headers to organize your thoughts.
+* **🏷️ Tagging System:** Group related notes using hashtags (e.g., `#ideas`, `#shopping`, `#journal`).
+* **⚡ Instant Load:** The app opens immediately so you never lose a thought waiting for a loading screen.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🛠️ Tech Stack
 
-## Learn more
+* **Framework:** [React Native](https://reactnative.dev/) (via [Expo](https://expo.dev/))
+* **Language:** TypeScript
+* **Storage:** AsyncStorage (Local JSON-based storage)
+* **Navigation:** React Navigation
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🚀 Getting Started
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+To run this project locally on your machine:
 
-## Join the community
+### Prerequisites
+* Node.js installed
+* Expo Go app on your phone (or an Android/iOS Simulator)
 
-Join our community of developers creating universal apps.
+### Installation
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# BrainLog
+1.  **Clone the repo**
+    ```bash
+    git clone [https://github.com/VigneshHegde78/BrainLog.git](https://github.com/VigneshHegde78/BrainLog.git)
+    cd BrainLog
+    ```
+
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Start the server**
+    ```bash
+    npx expo start
+    ```
+
+4.  **Run on device**
+    * Scan the QR code with your Android/iOS camera (or the Expo Go app).
+
+## 🗺️ Roadmap
+
+**Phase 1: The Essentials (Current)**
+- [x] Project Setup
+- [ ] Create, Read, Update, Delete (CRUD) notes
+- [ ] Markdown text rendering
+- [ ] Local Storage implementation
+
+**Phase 2: User Experience**
+- [x] Dark Mode / Light Mode toggle
+- [ ] Search notes by Title or Content
+- [ ] "Copy Note" feature
+
+**Phase 3: Advanced Features**
+- [ ] Export notes to PDF or Text file
+- [ ] Backup & Restore (Import/Export JSON)
+- [ ] Biometric Lock (FaceID/Fingerprint) for privacy
+
+## 🤝 Contributing
+
+Contributions are welcome! If you have an idea to make this better for everyone, feel free to fork the repo and submit a Pull Request.
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by Vignesh</p>
+</div>
