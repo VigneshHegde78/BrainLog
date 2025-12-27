@@ -1,86 +1,333 @@
+import { FloatingButton } from "@/components/FloatingButton";
+import { Task } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Notifications from "expo-notifications";
+import React, { useEffect, useRef, useState } from "react";
+import {
+	KeyboardAvoidingView,
+	Modal,
+	Platform,
+	SectionList,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native";
+
+// 1. Configure Handler (UI behavior when app is open)
+Notifications.setNotificationHandler({
+	handleNotification: async () => ({
+		shouldShowAlert: true,
+		shouldPlaySound: true,
+		shouldSetBadge: false,
+		shouldShowBanner: true,
+		shouldShowList: true,
+	}),
+});
+
+interface TaskSection {
+	title: string;
+	data: Task[];
+	count: number;
+}
 
 export default function TaskScreen() {
-	// 1. We wrap the data in useState so we can modify it
-	// Added 'completed: false' to every item to track state
-	const [tasks, setTasks] = useState([
-		{ id: "1", title: "Finish React Native project", completed: false },
-		{ id: "2", title: "Review pull requests", completed: false },
-		{ id: "3", title: "Update project documentation", completed: false },
-		{ id: "4", title: "Team meeting at 3 PM", completed: false },
-		{ id: "5", title: "Plan next sprint tasks", completed: false },
-		{ id: "6", title: "Fix bugs reported by QA", completed: false },
-		{ id: "7", title: "Optimize app performance", completed: false },
-		{
-			id: "8",
-			title: "Prepare presentation for stakeholders",
-			completed: false,
-		},
-	]);
+	const [allTasks, setAllTasks] = useState<Task[]>([]);
+	const [isModalVisible, setModalVisible] = useState(false);
+	const [newTaskTitle, setNewTaskTitle] = useState("");
+	const [reminderDate, setReminderDate] = useState<Date | null>(null);
+	const [showDatePicker, setShowDatePicker] = useState(false);
 
-	// Logic to remove a task
-	const deleteTask = (id: string) => {
-		// Filter creates a new array excluding the item with the given ID
-		setTasks(tasks.filter((item) => item.id !== id));
+	// 2. Register the "Mark as Completed" Button Category
+	useEffect(() => {
+		(async () => {
+			// Permission check
+			const { status } = await Notifications.requestPermissionsAsync();
+			if (status !== "granted") alert("Permissions required for reminders!");
+
+			// Define the category with the button
+			await Notifications.setNotificationCategoryAsync("task-reminder", [
+				{
+					identifier: "MARK_COMPLETED",
+					buttonTitle: "Mark as Completed",
+					options: {
+						opensAppToForeground: true, // App opens so we can update state
+					},
+				},
+			]);
+		})();
+	}, []);
+
+	// 3. Listener to handle the Button Click
+	// We use a ref to access the latest 'allTasks' state inside the listener without stale closures
+	// 3. Listener to handle the Button Click
+	const tasksRef = useRef(allTasks);
+	useEffect(() => {
+		tasksRef.current = allTasks;
+	}, [allTasks]);
+
+	useEffect(() => {
+		const subscription = Notifications.addNotificationResponseReceivedListener(
+			async (response) => {
+				const actionId = response.actionIdentifier;
+				const taskId = response.notification.request.content.data.taskId;
+				const notificationId = response.notification.request.identifier; // <--- 1. Get the Notification ID
+
+				if (actionId === "MARK_COMPLETED" && taskId) {
+					// Update the state
+					const updatedTasks = tasksRef.current.map((t) =>
+						t.id === taskId ? { ...t, completed: true } : t
+					);
+					setAllTasks(updatedTasks);
+
+					// 2. Explicitly dismiss this specific notification
+					await Notifications.dismissNotificationAsync(notificationId);
+				}
+			}
+		);
+
+		return () => subscription.remove();
+	}, []);
+
+	const pendingTasks = allTasks.filter((t) => !t.completed);
+	const completedTasks = allTasks.filter((t) => t.completed);
+
+	const sections: TaskSection[] = [
+		{
+			title: "Pending Tasks",
+			data: pendingTasks,
+
+			count: pendingTasks.length,
+		},
+		{
+			title: "Completed Tasks",
+			data: completedTasks,
+
+			count: completedTasks.length,
+		},
+	];
+
+	// 4. Update Schedule Logic to include Category and Task ID
+	const scheduleReminder = async (
+		title: string,
+		date: Date,
+		taskId: string
+	) => {
+		const triggerTime = date.getTime();
+		const now = Date.now();
+		const secondsFromNow = Math.floor((triggerTime - now) / 1000);
+
+		if (secondsFromNow <= 0) return;
+
+		await Notifications.scheduleNotificationAsync({
+			content: {
+				title: "Task Reminder",
+				body: `Don't forget to: ${title}`,
+				categoryIdentifier: "task-reminder", // <--- Attach the button category here
+				data: { taskId }, // <--- Send the ID so we know what to complete
+			},
+			trigger: {
+				type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+				seconds: secondsFromNow,
+				repeats: false,
+			},
+		});
 	};
 
-	// Logic to toggle checkbox
+	const handleAddTask = async () => {
+		if (newTaskTitle.trim().length === 0) return;
+
+		// Create ID first so we can use it for the notification
+		const newId = Date.now().toString();
+
+		if (reminderDate) {
+			await scheduleReminder(newTaskTitle, reminderDate, newId);
+		}
+
+		const newTask: Task = {
+			id: newId,
+			title: newTaskTitle,
+			completed: false,
+		};
+
+		setAllTasks([...allTasks, newTask]);
+		setNewTaskTitle("");
+		setReminderDate(null);
+		setModalVisible(false);
+	};
+
+	const deleteTask = (id: string) => {
+		setAllTasks(allTasks.filter((item) => item.id !== id));
+	};
+
 	const toggleCheckbox = (id: string) => {
-		setTasks(
-			tasks.map((item) => {
-				// If this is the item we clicked, flip its completed status
-				if (item.id === id) {
-					return { ...item, completed: !item.completed };
-				}
-				return item;
-			})
+		setAllTasks(
+			allTasks.map((item) =>
+				item.id === id ? { ...item, completed: !item.completed } : item
+			)
+		);
+	};
+
+	const onDateChange = (event: any, selectedDate?: Date) => {
+		if (Platform.OS === "android") setShowDatePicker(false);
+		if (selectedDate && selectedDate > new Date()) {
+			setReminderDate(selectedDate);
+		}
+	};
+
+	// ... (Your Render Functions remain exactly the same) ...
+	const renderTaskItem = ({ item }: { item: Task }) => (
+		<View className="flex-row bg-zinc-900 p-5 rounded-3xl justify-between items-center mb-3">
+			<Text
+				className={`text-base font-medium flex-1 mr-4 ${item.completed ? "text-zinc-500 line-through" : "text-gray-200"}`}
+			>
+				{item.title}
+			</Text>
+			<View className="flex-row items-center gap-3">
+				<TouchableOpacity onPress={() => toggleCheckbox(item.id)}>
+					<MaterialIcons
+						name={item.completed ? "replay" : "done"}
+						size={22}
+						color={"white"}
+					/>
+				</TouchableOpacity>
+				<TouchableOpacity onPress={() => deleteTask(item.id)}>
+					<MaterialIcons name="close" size={22} color="#ef4444" />
+				</TouchableOpacity>
+			</View>
+		</View>
+	);
+
+	const renderSectionHeader = ({ section }: { section: TaskSection }) => {
+		const { title, count, data } = section;
+		if (data.length === 0) return null;
+		return (
+			<View className="flex-row gap-2 items-center mb-4 mt-4 bg-black">
+				<Text className="text-gray-300 text-sm font-medium">{title}</Text>
+				<View
+					className={`bg-red-500 rounded-full w-5 h-5 items-center justify-center`}
+				>
+					<Text className="text-white text-xs font-semibold">{count}</Text>
+				</View>
+				<View className="bg-gray-500 w-full h-[1]" />
+			</View>
 		);
 	};
 
 	return (
-		<View className="flex-1 bg-black p-4">
-			<FlatList
-				data={tasks}
+		<View className="flex-1 bg-black p-4 relative">
+			<SectionList
+				sections={allTasks.length > 0 ? sections : []}
 				keyExtractor={(item) => item.id}
-				renderItem={({ item }) => (
-					<View className="flex-row bg-zinc-900 p-5 rounded-3xl justify-between items-center mb-3">
-						{/* Task Title with Conditional Styling */}
-						{/* flex-1 ensures the text takes up available space so icons don't get pushed off */}
-						<Text
-							className={`text-base font-medium flex-1 mr-4 ${
-								item.completed ? "text-zinc-500 line-through" : "text-gray-200"
-							}`}
-						>
-							{item.title}
+				renderItem={renderTaskItem}
+				renderSectionHeader={renderSectionHeader}
+				showsVerticalScrollIndicator={false}
+				stickySectionHeadersEnabled={false}
+				contentContainerStyle={{ flexGrow: 1 }}
+				ListEmptyComponent={() => (
+					<View className="flex-1 justify-center items-center mb-20">
+						<MaterialIcons name="playlist-add" size={64} color="#52525b" />
+						<Text className="text-zinc-500 text-lg font-medium mt-4">
+							No tasks found
 						</Text>
-
-						<View className="flex-row items-center gap-5">
-							{/* Checkbox Button */}
-							<TouchableOpacity onPress={() => toggleCheckbox(item.id)}>
-								<MaterialIcons
-									name={
-										item.completed ? "check-box" : "check-box-outline-blank"
-									}
-									size={22}
-									// Change color to green if completed, white if not
-									color={"white"}
-								/>
-							</TouchableOpacity>
-
-							{/* Delete Button */}
-							<TouchableOpacity onPress={() => deleteTask(item.id)}>
-								<MaterialIcons
-									name="delete-outline"
-									size={24}
-									color="#ef4444"
-								/>
-							</TouchableOpacity>
-						</View>
 					</View>
 				)}
 			/>
+
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={isModalVisible}
+				onRequestClose={() => setModalVisible(false)}
+			>
+				<KeyboardAvoidingView
+					behavior={Platform.OS === "ios" ? "padding" : "height"}
+					className="flex-1 justify-center items-center bg-black/80"
+				>
+					<View className="bg-zinc-900 w-11/12 p-6 rounded-2xl border border-zinc-800">
+						<Text className="text-white text-xl font-bold mb-4">
+							Create New Task
+						</Text>
+
+						<TextInput
+							className="bg-zinc-800 text-white p-4 rounded-xl text-lg mb-4"
+							placeholder="What needs to be done?"
+							placeholderTextColor="#71717a"
+							autoFocus={true}
+							value={newTaskTitle}
+							onChangeText={setNewTaskTitle}
+						/>
+
+						<TouchableOpacity
+							onPress={() => setShowDatePicker(true)}
+							className={`p-3 rounded-xl mb-6 flex-row items-center gap-2 border ${
+								reminderDate
+									? "bg-red-500/10 border-red-500"
+									: "bg-zinc-800 border-transparent"
+							}`}
+						>
+							<MaterialIcons
+								name="alarm"
+								size={18}
+								color={reminderDate ? "#ef4444" : "white"}
+							/>
+							<Text
+								className={
+									reminderDate
+										? "text-red-400 font-medium"
+										: "text-white text-sm"
+								}
+							>
+								{reminderDate
+									? reminderDate.toLocaleTimeString([], {
+											hour: "2-digit",
+											minute: "2-digit",
+										})
+									: "Set Reminder"}
+							</Text>
+						</TouchableOpacity>
+
+						{showDatePicker && (
+							<DateTimePicker
+								value={reminderDate || new Date()}
+								mode="time"
+								is24Hour={false}
+								display="default"
+								onChange={onDateChange}
+								// 1. Force the background to be dark
+								themeVariant="dark"
+								// 2. Change the "Action" color (Buttons, Selected Date) to Red
+								accentColor="#ef4444"
+								// 3. Force text to be white (Mainly for iOS Spinner mode)
+								textColor="white"
+							/>
+						)}
+
+						<View className="flex-row justify-end gap-4">
+							<TouchableOpacity
+								onPress={() => {
+									setModalVisible(false);
+									setReminderDate(null);
+								}}
+								className="px-4 py-2"
+							>
+								<Text className="text-zinc-400 font-medium text-lg">
+									Cancel
+								</Text>
+							</TouchableOpacity>
+							<TouchableOpacity
+								onPress={handleAddTask}
+								className="bg-red-500 px-6 py-2 rounded-xl"
+							>
+								<Text className="text-white font-semibold text-lg">Save</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+				</KeyboardAvoidingView>
+			</Modal>
+
+			<FloatingButton onPress={() => setModalVisible(true)} />
 		</View>
 	);
 }
