@@ -3,6 +3,7 @@ import { Task } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	KeyboardAvoidingView,
@@ -33,11 +34,14 @@ interface TaskSection {
 }
 
 export default function TaskScreen() {
+	const router = useRouter();
 	const [allTasks, setAllTasks] = useState<Task[]>([]);
 	const [isModalVisible, setModalVisible] = useState(false);
 	const [newTaskTitle, setNewTaskTitle] = useState("");
 	const [reminderDate, setReminderDate] = useState<Date | null>(null);
 	const [showDatePicker, setShowDatePicker] = useState(false);
+	const [selectionMode, setSelectionMode] = useState(false);
+	const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
 
 	// 2. Register the "Mark as Completed" Button Category
 	useEffect(() => {
@@ -90,8 +94,55 @@ export default function TaskScreen() {
 		return () => subscription.remove();
 	}, []);
 
-	const pendingTasks = allTasks.filter((t) => !t.completed);
-	const completedTasks = allTasks.filter((t) => t.completed);
+	const activeTasks = allTasks.filter((t) => !t.deletedAt);
+	const pendingTasks = activeTasks.filter((t) => !t.completed);
+	const completedTasks = activeTasks.filter((t) => t.completed);
+
+	const handleLongPress = (id: string) => {
+		setSelectionMode(true);
+		setSelectedTasks([id]);
+	};
+
+	const handleSelectTask = (id: string) => {
+		if (selectedTasks.includes(id)) {
+			setSelectedTasks(selectedTasks.filter((taskId) => taskId !== id));
+		} else {
+			setSelectedTasks([...selectedTasks, id]);
+		}
+	};
+
+	const handleSelectAll = () => {
+		if (selectedTasks.length === activeTasks.length) {
+			setSelectedTasks([]);
+		} else {
+			setSelectedTasks(activeTasks.map((task) => task.id));
+		}
+	};
+
+	const handleDeleteSelected = () => {
+		if (selectedTasks.length > 0) {
+			const tasksToDelete = allTasks.filter((t) =>
+				selectedTasks.includes(t.id)
+			);
+			const trashedTasks = tasksToDelete.map((task) => ({
+				...task,
+				deletedAt: new Date(),
+			}));
+			const updatedTasks = allTasks.map((t) =>
+				selectedTasks.includes(t.id)
+					? trashedTasks.find((tt) => tt.id === t.id)!
+					: t
+			);
+			setAllTasks(updatedTasks);
+			setSelectedTasks([]);
+			setSelectionMode(false);
+		}
+	};
+
+	const handleCancelSelection = () => {
+		setSelectionMode(false);
+		setSelectedTasks([]);
+	};
 
 	const sections: TaskSection[] = [
 		{
@@ -158,7 +209,11 @@ export default function TaskScreen() {
 	};
 
 	const deleteTask = (id: string) => {
-		setAllTasks(allTasks.filter((item) => item.id !== id));
+		setAllTasks(
+			allTasks.map((item) =>
+				item.id === id ? { ...item, deletedAt: new Date() } : item
+			)
+		);
 	};
 
 	const toggleCheckbox = (id: string) => {
@@ -176,28 +231,50 @@ export default function TaskScreen() {
 		}
 	};
 
-	// ... (Your Render Functions remain exactly the same) ...
-	const renderTaskItem = ({ item }: { item: Task }) => (
-		<View className="flex-row bg-zinc-900 p-5 rounded-3xl justify-between items-center mb-3">
-			<Text
-				className={`text-base font-medium flex-1 mr-4 ${item.completed ? "text-zinc-500 line-through" : "text-gray-200"}`}
+	const renderTaskItem = ({ item }: { item: Task }) => {
+		const isSelected = selectedTasks.includes(item.id);
+		return (
+			<TouchableOpacity
+				onPress={() => {
+					if (selectionMode) {
+						handleSelectTask(item.id);
+					}
+				}}
+				onLongPress={() => handleLongPress(item.id)}
+				activeOpacity={0.7}
 			>
-				{item.title}
-			</Text>
-			<View className="flex-row items-center gap-3">
-				<TouchableOpacity onPress={() => toggleCheckbox(item.id)}>
-					<MaterialIcons
-						name={item.completed ? "replay" : "done"}
-						size={22}
-						color={"white"}
-					/>
-				</TouchableOpacity>
-				<TouchableOpacity onPress={() => deleteTask(item.id)}>
-					<MaterialIcons name="close" size={22} color="#ef4444" />
-				</TouchableOpacity>
-			</View>
-		</View>
-	);
+				<View className="flex-row bg-zinc-900 p-5 rounded-3xl justify-between items-center mb-3">
+					{selectionMode && (
+						<MaterialIcons
+							name={isSelected ? "check-circle" : "radio-button-unchecked"}
+							size={24}
+							color={isSelected ? "#10b981" : "#71717a"}
+							style={{ marginRight: 12 }}
+						/>
+					)}
+					<Text
+						className={`text-base font-medium flex-1 mr-4 ${item.completed ? "text-zinc-500 line-through" : "text-gray-200"}`}
+					>
+						{item.title}
+					</Text>
+					{!selectionMode && (
+						<View className="flex-row items-center gap-3">
+							<TouchableOpacity onPress={() => toggleCheckbox(item.id)}>
+								<MaterialIcons
+									name={item.completed ? "replay" : "done"}
+									size={22}
+									color={"white"}
+								/>
+							</TouchableOpacity>
+							<TouchableOpacity onPress={() => deleteTask(item.id)}>
+								<MaterialIcons name="close" size={22} color="#ef4444" />
+							</TouchableOpacity>
+						</View>
+					)}
+				</View>
+			</TouchableOpacity>
+		);
+	};
 
 	const renderSectionHeader = ({ section }: { section: TaskSection }) => {
 		const { title, count, data } = section;
@@ -217,6 +294,45 @@ export default function TaskScreen() {
 
 	return (
 		<View className="flex-1 bg-black p-4 relative">
+			{/* Selection Mode Header */}
+			{selectionMode && (
+				<View className="flex-row items-center justify-between mb-4 bg-zinc-900 p-3 rounded-2xl">
+					<TouchableOpacity onPress={handleCancelSelection}>
+						<MaterialIcons name="close" size={24} color="#fff" />
+					</TouchableOpacity>
+					<Text className="text-white font-medium">
+						{selectedTasks.length} selected
+					</Text>
+					<View className="flex-row items-center gap-3">
+						<TouchableOpacity onPress={handleSelectAll}>
+							<MaterialIcons
+								name={
+									selectedTasks.length === activeTasks.length
+										? "deselect"
+										: "select-all"
+								}
+								size={24}
+								color="#fff"
+							/>
+						</TouchableOpacity>
+						<TouchableOpacity onPress={handleDeleteSelected}>
+							<MaterialIcons name="delete" size={24} color="#ef4444" />
+						</TouchableOpacity>
+					</View>
+				</View>
+			)}
+
+			{/* Deleted Items Icon */}
+			{!selectionMode && allTasks.some((t) => t.deletedAt) && (
+				<TouchableOpacity
+					onPress={() => router.push("/(roots)/deleted-tasks")}
+					className="absolute top-4 right-4 z-10 bg-zinc-900 p-3 rounded-full"
+					style={{ elevation: 5, shadowColor: "#000", shadowOpacity: 0.3 }}
+				>
+					<MaterialIcons name="delete-outline" size={24} color="#fff" />
+				</TouchableOpacity>
+			)}
+
 			<SectionList
 				sections={allTasks.length > 0 ? sections : []}
 				keyExtractor={(item) => item.id}

@@ -12,6 +12,9 @@ export default function RootLayout() {
 		return (
 			<TouchableOpacity
 				onPress={() => router.push(route)}
+				onLongPress={() =>
+					route === "/notes" ? router.push("/(roots)/private-auth") : null
+				}
 				className={`w-28 h-10 flex-row items-center justify-center rounded-full ${
 					isActive ? "bg-red-500" : "bg-white"
 				}`}

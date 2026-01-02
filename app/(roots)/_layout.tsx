@@ -21,6 +21,39 @@ export default function RootLayout() {
 					}}
 				/>
 				<Stack.Screen
+					name="list-editor"
+					options={{
+						headerShown: false,
+						presentation: "modal",
+						animation: "slide_from_bottom",
+					}}
+				/>
+				<Stack.Screen
+					name="private"
+					options={{
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen
+					name="security-setup"
+					options={{
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen
+					name="private-auth"
+					options={{
+						headerShown: false,
+					}}
+				/>
+				<Stack.Screen
+					name="password-reset"
+					options={{
+						headerShown: false,
+					}}
+				/>
+
+				<Stack.Screen
 					name="deleted"
 					options={{
 						title: "Recently Deleted",

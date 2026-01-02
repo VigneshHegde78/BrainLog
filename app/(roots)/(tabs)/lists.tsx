@@ -1,110 +1,203 @@
+import { FloatingButton } from "@/components/FloatingButton";
+import { useList } from "@/context/ListContext";
+import { List } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function ListScreen() {
-	const lists = [
-		{
-			id: "1",
-			title: "Grocery List",
-			listItems: ["Apples", "Bananas", "Carrots", "Detergent", "Eggs"],
-		},
-		{
-			id: "2",
-			title: "Project Tasks",
-			listItems: ["Design UI mockups", "Set up database"],
-		},
-		{
-			id: "3",
-			title: "Books to Read",
-			listItems: [
-				"The Great Gatsby",
-				"1984",
-				"To Kill a Mockingbird",
-				"The Catcher in the Rye",
-			],
-		},
-		{
-			id: "4",
-			title: "Travel Packing List",
-			listItems: ["Passport", "Tickets", "Clothes", "Toiletries", "Camera"],
-		},
-		{
-			id: "5",
-			title: "Workout Routine",
-			listItems: [
-				"Monday: Chest and Triceps",
-				"Wednesday: Back and Biceps",
-				"Friday: Legs and Shoulders",
-			],
-		},
-		{
-			id: "6",
-			title: "Birthday Gift Ideas",
-			listItems: ["Watch", "Sunglasses", "Book", "Gift Card"],
-		},
-	];
+	const { lists, moveToTrash, moveMultipleToTrash } = useList();
+	const router = useRouter();
+	const [selectionMode, setSelectionMode] = useState(false);
+	const [selectedLists, setSelectedLists] = useState<string[]>([]);
+
+	// Filter to show only non-deleted lists
+	const activeLists = lists.filter((list) => !list.deletedAt);
 
 	// Split into two columns for the masonry layout
-	const leftColumn = lists.filter((_, i) => i % 2 === 0);
-	const rightColumn = lists.filter((_, i) => i % 2 !== 0);
+	const leftColumn = activeLists.filter((_, i) => i % 2 === 0);
+	const rightColumn = activeLists.filter((_, i) => i % 2 !== 0);
 
-	// Reusable Card Component to allow cleaner code
-	const ListCard = ({
-		item,
-	}: {
-		item: {
-			listItems: any;
-			id: string;
-			title: string;
-		};
-	}) => (
-		<View
-			key={item.id}
-			className="bg-zinc-900 p-5 rounded-3xl mb-3 overflow-hidden"
-			style={{
-				minHeight: 50, // Ensures small lists aren't too tiny
-				maxHeight: 210, // LIMITS the height for big lists
-			}}
-		>
-			<Text className="text-gray-200 text-base font-medium whitespace-pre-wrap leading-6">
-				{item.title}
-			</Text>
+	const handleLongPress = (id: string) => {
+		setSelectionMode(true);
+		setSelectedLists([id]);
+	};
 
-			<View className="mt-3">
-				{item.listItems &&
-					item.listItems.map((listItem: string, index: number) => (
-						<Text key={index} className="text-gray-400 text-sm leading-5 mt-1">
-							<MaterialIcons name="check-box-outline-blank" size={12} />{" "}
-							{listItem}
-						</Text>
-					))}
-			</View>
-		</View>
-	);
-	return (
-		<View className="flex-1 bg-black p-4">
-			<ScrollView
-				contentContainerStyle={{
-					flexDirection: "row",
-					justifyContent: "space-between",
-					paddingBottom: 100,
+	const handleSelectList = (id: string) => {
+		if (selectedLists.includes(id)) {
+			setSelectedLists(selectedLists.filter((listId) => listId !== id));
+		} else {
+			setSelectedLists([...selectedLists, id]);
+		}
+	};
+
+	const handleSelectAll = () => {
+		if (selectedLists.length === activeLists.length) {
+			setSelectedLists([]);
+		} else {
+			setSelectedLists(activeLists.map((list) => list.id));
+		}
+	};
+
+	const handleDeleteSelected = () => {
+		if (selectedLists.length > 0) {
+			moveMultipleToTrash(selectedLists);
+			setSelectedLists([]);
+			setSelectionMode(false);
+		}
+	};
+
+	const handleCancelSelection = () => {
+		setSelectionMode(false);
+		setSelectedLists([]);
+	};
+
+	// Reusable Card Component
+	const ListCard = ({ item }: { item: List }) => {
+		const isSelected = selectedLists.includes(item.id);
+		return (
+			<TouchableOpacity
+				key={item.id}
+				className="bg-zinc-900 p-5 rounded-3xl mb-3 overflow-hidden"
+				style={{
+					minHeight: 50,
+					maxHeight: 210,
 				}}
+				onPress={() => {
+					if (selectionMode) {
+						handleSelectList(item.id);
+					} else {
+						router.push(`/list-editor?id=${item.id}`);
+					}
+				}}
+				onLongPress={() => handleLongPress(item.id)}
+				activeOpacity={0.7}
 			>
-				{/* Left column */}
-				<View style={{ width: "48%" }}>
-					{leftColumn.map((item) => (
-						<ListCard key={item.id} item={item} />
-					))}
-				</View>
+				{selectionMode && (
+					<View className="absolute top-3 right-3 z-10">
+						<MaterialIcons
+							name={isSelected ? "check-circle" : "radio-button-unchecked"}
+							size={24}
+							color={isSelected ? "#10b981" : "#71717a"}
+						/>
+					</View>
+				)}
+				<Text className="text-gray-200 text-base font-medium whitespace-pre-wrap leading-6">
+					{item.title || "Untitled List"}
+				</Text>
 
-				{/* Right column */}
-				<View style={{ width: "48%" }}>
-					{rightColumn.map((item) => (
-						<ListCard key={item.id} item={item} />
-					))}
+				<View className="mt-3">
+					{item.items && item.items.length > 0 ? (
+						item.items.slice(0, 5).map((listItem) => (
+							<View key={listItem.id} className="flex-row items-center mt-1">
+								<MaterialIcons
+									name={
+										listItem.completed ? "check-box" : "check-box-outline-blank"
+									}
+									size={16}
+									color={listItem.completed ? "#10b981" : "#71717a"}
+								/>
+								<Text
+									className="text-gray-400 text-sm leading-5 ml-2"
+									style={{
+										textDecorationLine: listItem.completed
+											? "line-through"
+											: "none",
+										opacity: listItem.completed ? 0.5 : 1,
+									}}
+								>
+									{listItem.text}
+								</Text>
+							</View>
+						))
+					) : (
+						<Text className="text-gray-500 text-sm italic">No items yet</Text>
+					)}
+					{item.items.length > 5 && (
+						<Text className="text-gray-500 text-xs mt-2">
+							+{item.items.length - 5} more items
+						</Text>
+					)}
 				</View>
-			</ScrollView>
+			</TouchableOpacity>
+		);
+	};
+
+	return (
+		<View className="flex-1 bg-black p-4 relative">
+			{/* Selection Mode Header */}
+			{selectionMode && (
+				<View className="flex-row items-center justify-between mb-4 bg-zinc-900 p-3 rounded-2xl">
+					<TouchableOpacity onPress={handleCancelSelection}>
+						<MaterialIcons name="close" size={24} color="#fff" />
+					</TouchableOpacity>
+					<Text className="text-white font-medium">
+						{selectedLists.length} selected
+					</Text>
+					<View className="flex-row items-center gap-3">
+						<TouchableOpacity onPress={handleSelectAll}>
+							<MaterialIcons
+								name={
+									selectedLists.length === activeLists.length
+										? "deselect"
+										: "select-all"
+								}
+								size={24}
+								color="#fff"
+							/>
+						</TouchableOpacity>
+						<TouchableOpacity onPress={handleDeleteSelected}>
+							<MaterialIcons name="delete" size={24} color="#ef4444" />
+						</TouchableOpacity>
+					</View>
+				</View>
+			)}
+
+			{/* Deleted Items Icon */}
+			{!selectionMode && lists.some((l) => l.deletedAt) && (
+				<TouchableOpacity
+					onPress={() => router.push("/(roots)/deleted-lists")}
+					className="absolute top-4 right-4 z-10 bg-zinc-900 p-3 rounded-full"
+					style={{ elevation: 5, shadowColor: "#000", shadowOpacity: 0.3 }}
+				>
+					<MaterialIcons name="delete-outline" size={24} color="#fff" />
+				</TouchableOpacity>
+			)}
+
+			{activeLists.length === 0 ? (
+				<View className="flex-1 justify-center items-center">
+					<MaterialIcons name="list-alt" size={64} color="#3f3f46" />
+					<Text className="text-gray-500 text-lg mt-4">No lists yet</Text>
+					<Text className="text-gray-600 text-sm mt-2">
+						Tap + to create your first list
+					</Text>
+				</View>
+			) : (
+				<ScrollView
+					contentContainerStyle={{
+						flexDirection: "row",
+						justifyContent: "space-between",
+						paddingBottom: 100,
+					}}
+				>
+					{/* Left column */}
+					<View style={{ width: "48%" }}>
+						{leftColumn.map((item) => (
+							<ListCard key={item.id} item={item} />
+						))}
+					</View>
+
+					{/* Right column */}
+					<View style={{ width: "48%" }}>
+						{rightColumn.map((item) => (
+							<ListCard key={item.id} item={item} />
+						))}
+					</View>
+				</ScrollView>
+			)}
+
+			<FloatingButton onPress={() => router.push("/list-editor")} />
 		</View>
 	);
 }

@@ -1,4 +1,5 @@
 import { useNotes } from "@/context/NoteContext";
+import { getAllTags } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router"; // <--- Import useLocalSearchParams
 import React, { useEffect, useState } from "react";
@@ -39,15 +40,36 @@ export default function NoteEditorScreen() {
 		}
 	}, [id]);
 
+	// Validate tag format: must contain only alphanumeric characters
+	const validateTag = (tag: string): boolean => {
+		// Remove # if present for validation
+		const cleanTag = tag.startsWith("#") ? tag.slice(1) : tag;
+		// Allow only alphanumeric characters
+		return /^[a-zA-Z0-9]+$/.test(cleanTag) && cleanTag.length > 0;
+	};
+
+	const formatTag = (tag: string): string => {
+		// Remove all spaces and special characters except alphanumeric and #
+		let cleanTag = tag.replace(/[^a-zA-Z0-9#]/g, "").toLowerCase();
+		// Ensure it starts with #
+		if (!cleanTag.startsWith("#")) {
+			cleanTag = "#" + cleanTag;
+		}
+		return cleanTag;
+	};
+
 	const handleTagInput = (text: string) => {
-		if (text.endsWith(" ") || text.endsWith(",")) {
-			const newTag = text.trim().replace(/,/g, "");
-			if (newTag.length > 0 && !tags.includes(newTag)) {
-				setTags([...tags, newTag]);
+		// Handle space, comma, or Enter to finalize tag
+		if (text.endsWith(" ") || text.endsWith(",") || text.endsWith("\n")) {
+			const cleanedTag = formatTag(text.trim());
+			if (validateTag(cleanedTag) && !tags.includes(cleanedTag)) {
+				setTags([...tags, cleanedTag]);
 				setCurrentTag("");
 			}
 		} else {
-			setCurrentTag(text);
+			// Allow user to type, but don't allow spaces or special chars
+			const cleanedText = text.replace(/[^a-zA-Z0-9#]/g, "").toLowerCase();
+			setCurrentTag(cleanedText);
 		}
 	};
 
@@ -98,14 +120,13 @@ export default function NoteEditorScreen() {
 
 				<View className="flex-row flex-wrap items-center gap-2 mb-6">
 					<MaterialIcons name="sell" size={20} color="#71717a" />
-					{tags.map((tag) => (
+					{getAllTags(tags).map((tag) => (
 						<TouchableOpacity
 							key={tag}
 							onPress={() => removeTag(tag)}
 							className="bg-zinc-800 flex-row items-center px-3 py-1.5 rounded-full"
 						>
-							<Text className="text-red-400 mr-1">#</Text>
-							<Text className="text-gray-300 font-medium">{tag}</Text>
+							<Text className="text-red-400 font-semibold mr-1">{tag}</Text>
 							<MaterialIcons
 								name="close"
 								size={14}
