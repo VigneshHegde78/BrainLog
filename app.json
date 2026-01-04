@@ -16,13 +16,7 @@
 				"backgroundColor": "#E6F4FE"
 			},
 			"edgeToEdgeEnabled": true,
-			"predictiveBackGestureEnabled": false,
-			"package": "com.brainlog",
-			"permissions": [
-				"android.permission.INTERNET",
-				"android.permission.WRITE_EXTERNAL_STORAGE",
-				"android.permission.READ_EXTERNAL_STORAGE"
-			]
+			"predictiveBackGestureEnabled": false
 		},
 		"web": {
 			"bundler": "metro",
