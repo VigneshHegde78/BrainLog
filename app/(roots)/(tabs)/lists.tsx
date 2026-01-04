@@ -7,17 +7,14 @@ import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function ListScreen() {
-	const { lists, moveToTrash, moveMultipleToTrash } = useList();
+	const { lists, deleteMultipleLists } = useList();
 	const router = useRouter();
 	const [selectionMode, setSelectionMode] = useState(false);
 	const [selectedLists, setSelectedLists] = useState<string[]>([]);
 
-	// Filter to show only non-deleted lists
-	const activeLists = lists.filter((list) => !list.deletedAt);
-
 	// Split into two columns for the masonry layout
-	const leftColumn = activeLists.filter((_, i) => i % 2 === 0);
-	const rightColumn = activeLists.filter((_, i) => i % 2 !== 0);
+	const leftColumn = lists.filter((_, i) => i % 2 === 0);
+	const rightColumn = lists.filter((_, i) => i % 2 !== 0);
 
 	const handleLongPress = (id: string) => {
 		setSelectionMode(true);
@@ -33,16 +30,16 @@ export default function ListScreen() {
 	};
 
 	const handleSelectAll = () => {
-		if (selectedLists.length === activeLists.length) {
+		if (selectedLists.length === lists.length) {
 			setSelectedLists([]);
 		} else {
-			setSelectedLists(activeLists.map((list) => list.id));
+			setSelectedLists(lists.map((list) => list.id));
 		}
 	};
 
 	const handleDeleteSelected = () => {
 		if (selectedLists.length > 0) {
-			moveMultipleToTrash(selectedLists);
+			deleteMultipleLists(selectedLists);
 			setSelectedLists([]);
 			setSelectionMode(false);
 		}
@@ -139,7 +136,7 @@ export default function ListScreen() {
 						<TouchableOpacity onPress={handleSelectAll}>
 							<MaterialIcons
 								name={
-									selectedLists.length === activeLists.length
+									selectedLists.length === lists.length
 										? "deselect"
 										: "select-all"
 								}
@@ -154,18 +151,7 @@ export default function ListScreen() {
 				</View>
 			)}
 
-			{/* Deleted Items Icon */}
-			{!selectionMode && lists.some((l) => l.deletedAt) && (
-				<TouchableOpacity
-					onPress={() => router.push("/(roots)/deleted-lists")}
-					className="absolute top-4 right-4 z-10 bg-zinc-900 p-3 rounded-full"
-					style={{ elevation: 5, shadowColor: "#000", shadowOpacity: 0.3 }}
-				>
-					<MaterialIcons name="delete-outline" size={24} color="#fff" />
-				</TouchableOpacity>
-			)}
-
-			{activeLists.length === 0 ? (
+			{lists.length === 0 ? (
 				<View className="flex-1 justify-center items-center">
 					<MaterialIcons name="list-alt" size={64} color="#3f3f46" />
 					<Text className="text-gray-500 text-lg mt-4">No lists yet</Text>

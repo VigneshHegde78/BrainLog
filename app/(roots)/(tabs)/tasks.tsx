@@ -1,4 +1,5 @@
 import { FloatingButton } from "@/components/FloatingButton";
+import { useTasks } from "@/context/TaskContext";
 import { Task } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -35,7 +36,13 @@ interface TaskSection {
 
 export default function TaskScreen() {
 	const router = useRouter();
-	const [allTasks, setAllTasks] = useState<Task[]>([]);
+	const {
+		tasks: allTasks,
+		addTask,
+		deleteTask,
+		deleteMultipleTasks,
+		toggleTaskCompletion,
+	} = useTasks();
 	const [isModalVisible, setModalVisible] = useState(false);
 	const [newTaskTitle, setNewTaskTitle] = useState("");
 	const [reminderDate, setReminderDate] = useState<Date | null>(null);
@@ -75,15 +82,16 @@ export default function TaskScreen() {
 		const subscription = Notifications.addNotificationResponseReceivedListener(
 			async (response) => {
 				const actionId = response.actionIdentifier;
-				const taskId = response.notification.request.content.data.taskId;
+				const taskId = response.notification.request.content.data
+					.taskId as string;
 				const notificationId = response.notification.request.identifier; // <--- 1. Get the Notification ID
 
 				if (actionId === "MARK_COMPLETED" && taskId) {
-					// Update the state
-					const updatedTasks = tasksRef.current.map((t) =>
-						t.id === taskId ? { ...t, completed: true } : t
-					);
-					setAllTasks(updatedTasks);
+					// Update the task using context
+					const task = tasksRef.current.find((t) => t.id === taskId);
+					if (task) {
+						toggleTaskCompletion(taskId);
+					}
 
 					// 2. Explicitly dismiss this specific notification
 					await Notifications.dismissNotificationAsync(notificationId);
@@ -92,11 +100,11 @@ export default function TaskScreen() {
 		);
 
 		return () => subscription.remove();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	const activeTasks = allTasks.filter((t) => !t.deletedAt);
-	const pendingTasks = activeTasks.filter((t) => !t.completed);
-	const completedTasks = activeTasks.filter((t) => t.completed);
+	const pendingTasks = allTasks.filter((t) => !t.completed);
+	const completedTasks = allTasks.filter((t) => t.completed);
 
 	const handleLongPress = (id: string) => {
 		setSelectionMode(true);
@@ -112,28 +120,16 @@ export default function TaskScreen() {
 	};
 
 	const handleSelectAll = () => {
-		if (selectedTasks.length === activeTasks.length) {
+		if (selectedTasks.length === allTasks.length) {
 			setSelectedTasks([]);
 		} else {
-			setSelectedTasks(activeTasks.map((task) => task.id));
+			setSelectedTasks(allTasks.map((task) => task.id));
 		}
 	};
 
 	const handleDeleteSelected = () => {
 		if (selectedTasks.length > 0) {
-			const tasksToDelete = allTasks.filter((t) =>
-				selectedTasks.includes(t.id)
-			);
-			const trashedTasks = tasksToDelete.map((task) => ({
-				...task,
-				deletedAt: new Date(),
-			}));
-			const updatedTasks = allTasks.map((t) =>
-				selectedTasks.includes(t.id)
-					? trashedTasks.find((tt) => tt.id === t.id)!
-					: t
-			);
-			setAllTasks(updatedTasks);
+			deleteMultipleTasks(selectedTasks);
 			setSelectedTasks([]);
 			setSelectionMode(false);
 		}
@@ -202,26 +198,18 @@ export default function TaskScreen() {
 			completed: false,
 		};
 
-		setAllTasks([...allTasks, newTask]);
+		addTask(newTask);
 		setNewTaskTitle("");
 		setReminderDate(null);
 		setModalVisible(false);
 	};
 
-	const deleteTask = (id: string) => {
-		setAllTasks(
-			allTasks.map((item) =>
-				item.id === id ? { ...item, deletedAt: new Date() } : item
-			)
-		);
+	const handleDeleteTask = (id: string) => {
+		deleteTask(id);
 	};
 
 	const toggleCheckbox = (id: string) => {
-		setAllTasks(
-			allTasks.map((item) =>
-				item.id === id ? { ...item, completed: !item.completed } : item
-			)
-		);
+		toggleTaskCompletion(id);
 	};
 
 	const onDateChange = (event: any, selectedDate?: Date) => {
@@ -266,7 +254,7 @@ export default function TaskScreen() {
 									color={"white"}
 								/>
 							</TouchableOpacity>
-							<TouchableOpacity onPress={() => deleteTask(item.id)}>
+							<TouchableOpacity onPress={() => handleDeleteTask(item.id)}>
 								<MaterialIcons name="close" size={22} color="#ef4444" />
 							</TouchableOpacity>
 						</View>
@@ -307,7 +295,7 @@ export default function TaskScreen() {
 						<TouchableOpacity onPress={handleSelectAll}>
 							<MaterialIcons
 								name={
-									selectedTasks.length === activeTasks.length
+									selectedTasks.length === allTasks.length
 										? "deselect"
 										: "select-all"
 								}
@@ -320,17 +308,6 @@ export default function TaskScreen() {
 						</TouchableOpacity>
 					</View>
 				</View>
-			)}
-
-			{/* Deleted Items Icon */}
-			{!selectionMode && allTasks.some((t) => t.deletedAt) && (
-				<TouchableOpacity
-					onPress={() => router.push("/(roots)/deleted-tasks")}
-					className="absolute top-4 right-4 z-10 bg-zinc-900 p-3 rounded-full"
-					style={{ elevation: 5, shadowColor: "#000", shadowOpacity: 0.3 }}
-				>
-					<MaterialIcons name="delete-outline" size={24} color="#fff" />
-				</TouchableOpacity>
 			)}
 
 			<SectionList

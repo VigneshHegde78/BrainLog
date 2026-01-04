@@ -4,84 +4,131 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface ListContextType {
 	lists: List[];
-	trash: List[];
 	addList: (title: string, items: ListItem[]) => void;
 	updateList: (id: string, title: string, items: ListItem[]) => void;
 	deleteList: (id: string) => void;
+	deleteMultipleLists: (ids: string[]) => void;
 	getListById: (id: string) => List | undefined;
-	moveToTrash: (id: string) => void;
-	moveMultipleToTrash: (ids: string[]) => void;
-	restoreList: (id: string) => void;
-	restoreMultipleLists: (ids: string[]) => void;
-	permanentlyDelete: (id: string) => void;
-	permanentlyDeleteMultiple: (ids: string[]) => void;
 }
 
 const ListContext = createContext<ListContextType | undefined>(undefined);
 
 const STORAGE_KEY = "@lists";
 
+const SAMPLE_LISTS: List[] = [
+	{
+		id: "sample-list-1",
+		title: "App Features",
+		items: [
+			{
+				id: "f1",
+				text: "Create and organize notes with tags",
+				completed: true,
+			},
+			{
+				id: "f2",
+				text: "Secure private notes with PIN/Pattern/Biometric",
+				completed: true,
+			},
+			{ id: "f3", text: "Task management with reminders", completed: true },
+			{ id: "f4", text: "Create custom lists and checklists", completed: true },
+			{
+				id: "f5",
+				text: "Homescreen widgets for quick access",
+				completed: false,
+			},
+			{ id: "f6", text: "Search across all notes", completed: true },
+			{ id: "f7", text: "Dark mode optimized interface", completed: true },
+		],
+		date: new Date("2026-01-04T10:00:00"),
+	},
+	{
+		id: "sample-list-2",
+		title: "How to Create and Manage Lists",
+		items: [
+			{
+				id: "l1",
+				text: "Tap the + button to create a new list",
+				completed: false,
+			},
+			{ id: "l2", text: "Give your list a title", completed: false },
+			{
+				id: "l3",
+				text: "Add items by typing and pressing the + icon",
+				completed: false,
+			},
+			{
+				id: "l4",
+				text: "Check off items as you complete them",
+				completed: false,
+			},
+			{
+				id: "l5",
+				text: "Long press any list to select and delete",
+				completed: false,
+			},
+			{ id: "l6", text: "Edit lists by tapping on them", completed: false },
+		],
+		date: new Date("2026-01-04T09:30:00"),
+	},
+];
+
 export const ListProvider = ({ children }: { children: React.ReactNode }) => {
 	const [lists, setLists] = useState<List[]>([]);
-	const [trash, setTrash] = useState<List[]>([]);
+	const [isInitialized, setIsInitialized] = useState(false);
 
 	// Load lists from AsyncStorage on mount
 	useEffect(() => {
+		// Uncomment the line below to reset and see sample lists
+		// AsyncStorage.removeItem(STORAGE_KEY).then(() => loadLists());
 		loadLists();
 	}, []);
 
 	// Save lists to AsyncStorage whenever they change
 	useEffect(() => {
-		saveLists();
-	}, [lists]);
-
-	// Clean up old trash items (30 days)
-	useEffect(() => {
-		const now = new Date();
-		const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
-
-		const allLists = [...lists, ...trash];
-		const cleanedLists = allLists.filter((list) => {
-			if (!list.deletedAt) return true;
-			const timeInTrash = now.getTime() - new Date(list.deletedAt).getTime();
-			return timeInTrash < thirtyDaysInMs;
-		});
-
-		const activeItems = cleanedLists.filter((l) => !l.deletedAt);
-		const trashedItems = cleanedLists.filter((l) => l.deletedAt);
-
-		setLists(activeItems);
-		setTrash(trashedItems);
-	}, []);
+		if (isInitialized) {
+			saveLists();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [lists, isInitialized]);
 
 	const loadLists = async () => {
 		try {
 			const storedLists = await AsyncStorage.getItem(STORAGE_KEY);
 			if (storedLists) {
 				const parsedLists = JSON.parse(storedLists);
+
+				// If storage exists but is empty, initialize with sample lists
+				if (parsedLists.length === 0) {
+					setLists(SAMPLE_LISTS);
+					setIsInitialized(true);
+					return;
+				}
+
 				// Convert date strings back to Date objects
 				const listsWithDates = parsedLists.map((list: any) => ({
 					...list,
 					date: new Date(list.date),
-					deletedAt: list.deletedAt ? new Date(list.deletedAt) : undefined,
 				}));
 
-				// Separate active and deleted lists
-				const activeItems = listsWithDates.filter((l: List) => !l.deletedAt);
-				const trashedItems = listsWithDates.filter((l: List) => l.deletedAt);
-
-				setLists(activeItems);
-				setTrash(trashedItems);
+				setLists(listsWithDates);
+				setIsInitialized(true);
+			} else {
+				// First run - no storage exists, add sample lists
+				setLists(SAMPLE_LISTS);
+				setIsInitialized(true);
 			}
 		} catch (error) {
 			console.error("Error loading lists:", error);
+			// On error, still initialize with sample lists
+			setLists(SAMPLE_LISTS);
+			setIsInitialized(true);
 		}
 	};
 
 	const saveLists = async () => {
 		try {
-			const allLists = [...lists, ...trash];
-			await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(allLists));
+			await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(lists));
 		} catch (error) {
 			console.error("Error saving lists:", error);
 		}
@@ -111,71 +158,23 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
 		setLists(lists.filter((list) => list.id !== id));
 	};
 
+	const deleteMultipleLists = (ids: string[]) => {
+		setLists(lists.filter((list) => !ids.includes(list.id)));
+	};
+
 	const getListById = (id: string): List | undefined => {
 		return lists.find((list) => list.id === id);
-	};
-
-	const moveToTrash = (id: string) => {
-		const listToDelete = lists.find((l) => l.id === id);
-		if (listToDelete) {
-			const trashedList = { ...listToDelete, deletedAt: new Date() };
-			setTrash([trashedList, ...trash]);
-			setLists(lists.filter((l) => l.id !== id));
-		}
-	};
-
-	const moveMultipleToTrash = (ids: string[]) => {
-		const listsToDelete = lists.filter((l) => ids.includes(l.id));
-		const trashedLists = listsToDelete.map((list) => ({
-			...list,
-			deletedAt: new Date(),
-		}));
-		setTrash([...trashedLists, ...trash]);
-		setLists(lists.filter((l) => !ids.includes(l.id)));
-	};
-
-	const restoreList = (id: string) => {
-		const listToRestore = trash.find((l) => l.id === id);
-		if (listToRestore) {
-			const restoredList = { ...listToRestore, deletedAt: undefined };
-			setLists([restoredList, ...lists]);
-			setTrash(trash.filter((l) => l.id !== id));
-		}
-	};
-
-	const restoreMultipleLists = (ids: string[]) => {
-		const listsToRestore = trash.filter((l) => ids.includes(l.id));
-		const restoredLists = listsToRestore.map((list) => ({
-			...list,
-			deletedAt: undefined,
-		}));
-		setLists([...restoredLists, ...lists]);
-		setTrash(trash.filter((l) => !ids.includes(l.id)));
-	};
-
-	const permanentlyDelete = (id: string) => {
-		setTrash(trash.filter((list) => list.id !== id));
-	};
-
-	const permanentlyDeleteMultiple = (ids: string[]) => {
-		setTrash(trash.filter((list) => !ids.includes(list.id)));
 	};
 
 	return (
 		<ListContext.Provider
 			value={{
 				lists,
-				trash,
 				addList,
 				updateList,
 				deleteList,
+				deleteMultipleLists,
 				getListById,
-				moveToTrash,
-				moveMultipleToTrash,
-				restoreList,
-				restoreMultipleLists,
-				permanentlyDelete,
-				permanentlyDeleteMultiple,
 			}}
 		>
 			{children}

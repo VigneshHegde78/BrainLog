@@ -196,7 +196,7 @@ export default function NoteScreen() {
 				contentContainerStyle={{ paddingBottom: 100 }}
 			>
 				{filteredNotes.length === 0 ? (
-					<View className="mt-20 items-center opacity-50">
+					<View className="flex-1 mt-48 justify-center items-center opacity-50">
 						<MaterialIcons name="sticky-note-2" size={48} color="white" />
 						<Text className="text-white mt-4 font-medium">No notes found</Text>
 					</View>
