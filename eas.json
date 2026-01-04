@@ -1,0 +1,14 @@
+{
+	"android": {
+		"package": "com.brainlog",
+		"versionCode": 1,
+		"permissions": [
+			"INTERNET",
+			"WRITE_EXTERNAL_STORAGE",
+			"READ_EXTERNAL_STORAGE"
+		],
+		"config": {
+			"googleMobileAdsAppId": ""
+		}
+	}
+}
