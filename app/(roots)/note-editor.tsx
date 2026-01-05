@@ -1,4 +1,5 @@
 import { useNotes } from "@/context/NoteContext";
+import { useTheme } from "@/context/ThemeContext";
 import { getAllTags } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router"; // <--- Import useLocalSearchParams
@@ -15,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function NoteEditorScreen() {
 	const router = useRouter();
 	const { addNote, updateNote, notes } = useNotes();
+	const { colors, isDark, toggleTheme } = useTheme();
 
 	// Get the ID if it was passed (e.g. /note-editor?id=123)
 	const { id } = useLocalSearchParams<{ id: string }>();
@@ -95,10 +97,13 @@ export default function NoteEditorScreen() {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-black">
-			<View className="flex-row justify-between items-center px-4 py-2 border-b border-zinc-900">
+		<SafeAreaView
+			className="flex-1"
+			style={{ backgroundColor: colors.background }}
+		>
+			<View className="flex-row justify-between items-center px-4 py-2 border-b" style={{ borderBottomColor: colors.card }}>
 				<TouchableOpacity onPress={() => router.back()} className="p-2">
-					<MaterialIcons name="arrow-back" size={24} color="white" />
+					<MaterialIcons name="arrow-back" size={24} color={colors.text} />
 				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={handleSave}
@@ -110,7 +115,8 @@ export default function NoteEditorScreen() {
 
 			<ScrollView className="flex-1 p-4">
 				<TextInput
-					className="text-3xl font-bold text-white mb-4"
+					className="text-3xl font-bold mb-4"
+					style={{ color: colors.text }}
 					placeholder="Title"
 					placeholderTextColor="#52525b"
 					value={title}
@@ -124,7 +130,8 @@ export default function NoteEditorScreen() {
 						<TouchableOpacity
 							key={tag}
 							onPress={() => removeTag(tag)}
-							className="bg-zinc-800 flex-row items-center px-3 py-1.5 rounded-full"
+							className=" flex-row items-center px-3 py-1.5 rounded-full"
+							style={{ backgroundColor: isDark ? "#1E1E1E" : "#E5E5E5" }}
 						>
 							<Text className="text-red-400 font-semibold mr-1">{tag}</Text>
 							<MaterialIcons
@@ -146,7 +153,8 @@ export default function NoteEditorScreen() {
 				</View>
 
 				<TextInput
-					className="text-lg text-gray-300 leading-relaxed min-h-[300px]"
+					className="text-lg leading-relaxed min-h-[300px]"
+					style={{ color: colors.text2 }}
 					placeholder="Start typing your thoughts..."
 					placeholderTextColor="#52525b"
 					value={content}

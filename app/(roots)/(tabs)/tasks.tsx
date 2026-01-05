@@ -1,5 +1,6 @@
 import { FloatingButton } from "@/components/FloatingButton";
 import { useTasks } from "@/context/TaskContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Task } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -49,6 +50,7 @@ export default function TaskScreen() {
 	const [showDatePicker, setShowDatePicker] = useState(false);
 	const [selectionMode, setSelectionMode] = useState(false);
 	const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
+	const { colors, isDark } = useTheme();
 
 	// 2. Register the "Mark as Completed" Button Category
 	useEffect(() => {
@@ -231,7 +233,10 @@ export default function TaskScreen() {
 				onLongPress={() => handleLongPress(item.id)}
 				activeOpacity={0.7}
 			>
-				<View className="flex-row bg-zinc-900 p-5 rounded-3xl justify-between items-center mb-3">
+				<View
+					className="flex-row p-5 rounded-3xl justify-between items-center mb-3"
+					style={{ backgroundColor: colors.card }}
+				>
 					{selectionMode && (
 						<MaterialIcons
 							name={isSelected ? "check-circle" : "radio-button-unchecked"}
@@ -241,7 +246,8 @@ export default function TaskScreen() {
 						/>
 					)}
 					<Text
-						className={`text-base font-medium flex-1 mr-4 ${item.completed ? "text-zinc-500 line-through" : "text-gray-200"}`}
+						className={`text-base font-medium flex-1 mr-4 ${item.completed ? (isDark ? "text-zinc-500 line-through" : "text-gray-200 line-through") : ""}`}
+						style={{ color: colors.text }}
 					>
 						{item.title}
 					</Text>
@@ -251,7 +257,7 @@ export default function TaskScreen() {
 								<MaterialIcons
 									name={item.completed ? "replay" : "done"}
 									size={22}
-									color={"white"}
+									color={colors.text}
 								/>
 							</TouchableOpacity>
 							<TouchableOpacity onPress={() => handleDeleteTask(item.id)}>
@@ -268,8 +274,13 @@ export default function TaskScreen() {
 		const { title, count, data } = section;
 		if (data.length === 0) return null;
 		return (
-			<View className="flex-row gap-2 items-center mb-4 mt-4 bg-black">
-				<Text className="text-gray-300 text-sm font-medium">{title}</Text>
+			<View
+				className="flex-row gap-2 items-center mb-4 mt-4"
+				style={{ backgroundColor: colors.background }}
+			>
+				<Text className=" text-sm font-medium" style={{ color: colors.text }}>
+					{title}
+				</Text>
 				<View
 					className={`bg-red-500 rounded-full w-5 h-5 items-center justify-center`}
 				>
@@ -281,14 +292,20 @@ export default function TaskScreen() {
 	};
 
 	return (
-		<View className="flex-1 bg-black p-4 relative">
+		<View
+			className="flex-1 p-4 relative"
+			style={{ backgroundColor: colors.background }}
+		>
 			{/* Selection Mode Header */}
 			{selectionMode && (
-				<View className="flex-row items-center justify-between mb-4 bg-zinc-900 p-3 rounded-2xl">
+				<View
+					className="flex-row items-center justify-between mb-4 p-3 rounded-2xl"
+					style={{ backgroundColor: colors.card }}
+				>
 					<TouchableOpacity onPress={handleCancelSelection}>
-						<MaterialIcons name="close" size={24} color="#fff" />
+						<MaterialIcons name="close" size={24} color={colors.text} />
 					</TouchableOpacity>
-					<Text className="text-white font-medium">
+					<Text className=" font-medium" style={{ color: colors.text }}>
 						{selectedTasks.length} selected
 					</Text>
 					<View className="flex-row items-center gap-3">
@@ -300,7 +317,7 @@ export default function TaskScreen() {
 										: "select-all"
 								}
 								size={24}
-								color="#fff"
+								color={colors.text}
 							/>
 						</TouchableOpacity>
 						<TouchableOpacity onPress={handleDeleteSelected}>
@@ -338,13 +355,14 @@ export default function TaskScreen() {
 					behavior={Platform.OS === "ios" ? "padding" : "height"}
 					className="flex-1 justify-center items-center bg-black/80"
 				>
-					<View className="bg-zinc-900 w-11/12 p-6 rounded-2xl border border-zinc-800">
-						<Text className="text-white text-xl font-bold mb-4">
+					<View className="w-11/12 p-6 rounded-2xl border border-zinc-800" style={{ backgroundColor: colors.background }}>
+						<Text className=" text-xl font-bold mb-4" style={{ color: colors.text }}>
 							Create New Task
 						</Text>
 
 						<TextInput
-							className="bg-zinc-800 text-white p-4 rounded-xl text-lg mb-4"
+							className="bg-zinc-800 p-4 rounded-xl text-lg mb-4"
+							style={{ backgroundColor: colors.card, color: colors.text }}
 							placeholder="What needs to be done?"
 							placeholderTextColor="#71717a"
 							autoFocus={true}
@@ -359,18 +377,20 @@ export default function TaskScreen() {
 									? "bg-red-500/10 border-red-500"
 									: "bg-zinc-800 border-transparent"
 							}`}
+							style={{ backgroundColor: reminderDate ? "rgba(239, 68, 68, 0.1)" : colors.card, borderColor: reminderDate ? "#ef4444" : "transparent" }}
 						>
 							<MaterialIcons
 								name="alarm"
 								size={18}
-								color={reminderDate ? "#ef4444" : "white"}
+								color={reminderDate ? "#ef4444" : isDark ? "#A1A1AA" : "#71717a"}
 							/>
 							<Text
 								className={
 									reminderDate
 										? "text-red-400 font-medium"
-										: "text-white text-sm"
+										: " text-sm"
 								}
+								style={{ color: reminderDate ? "#ef4444" : colors.text }}
 							>
 								{reminderDate
 									? reminderDate.toLocaleTimeString([], {

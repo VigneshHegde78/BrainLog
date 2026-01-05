@@ -1,5 +1,6 @@
 import { FloatingButton } from "@/components/FloatingButton";
 import { useList } from "@/context/ListContext";
+import { useTheme } from "@/context/ThemeContext";
 import { List } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -11,6 +12,7 @@ export default function ListScreen() {
 	const router = useRouter();
 	const [selectionMode, setSelectionMode] = useState(false);
 	const [selectedLists, setSelectedLists] = useState<string[]>([]);
+	const { colors, isDark } = useTheme();
 
 	// Split into two columns for the masonry layout
 	const leftColumn = lists.filter((_, i) => i % 2 === 0);
@@ -56,10 +58,11 @@ export default function ListScreen() {
 		return (
 			<TouchableOpacity
 				key={item.id}
-				className="bg-zinc-900 p-5 rounded-3xl mb-3 overflow-hidden"
+				className="p-5 rounded-3xl mb-3 overflow-hidden"
 				style={{
 					minHeight: 50,
-					maxHeight: 210,
+					maxHeight: "100%",
+					backgroundColor: colors.card,
 				}}
 				onPress={() => {
 					if (selectionMode) {
@@ -80,7 +83,10 @@ export default function ListScreen() {
 						/>
 					</View>
 				)}
-				<Text className="text-gray-200 text-base font-medium whitespace-pre-wrap leading-6">
+				<Text
+					className=" text-base font-medium whitespace-pre-wrap leading-6"
+					style={{ color: colors.text }}
+				>
 					{item.title || "Untitled List"}
 				</Text>
 
@@ -96,12 +102,13 @@ export default function ListScreen() {
 									color={listItem.completed ? "#10b981" : "#71717a"}
 								/>
 								<Text
-									className="text-gray-400 text-sm leading-5 ml-2"
+									className="text-sm leading-5 mx-2"
 									style={{
 										textDecorationLine: listItem.completed
 											? "line-through"
 											: "none",
 										opacity: listItem.completed ? 0.5 : 1,
+										color: colors.text,
 									}}
 								>
 									{listItem.text}
@@ -122,14 +129,20 @@ export default function ListScreen() {
 	};
 
 	return (
-		<View className="flex-1 bg-black p-4 relative">
+		<View
+			className="flex-1 p-4 relative"
+			style={{ backgroundColor: colors.background }}
+		>
 			{/* Selection Mode Header */}
 			{selectionMode && (
-				<View className="flex-row items-center justify-between mb-4 bg-zinc-900 p-3 rounded-2xl">
+				<View
+					className="flex-row items-center justify-between mb-4 p-3 rounded-2xl"
+					style={{ backgroundColor: colors.card }}
+				>
 					<TouchableOpacity onPress={handleCancelSelection}>
-						<MaterialIcons name="close" size={24} color="#fff" />
+						<MaterialIcons name="close" size={24} color={colors.text} />
 					</TouchableOpacity>
-					<Text className="text-white font-medium">
+					<Text className="font-medium" style={{ color: colors.text }}>
 						{selectedLists.length} selected
 					</Text>
 					<View className="flex-row items-center gap-3">
@@ -141,7 +154,7 @@ export default function ListScreen() {
 										: "select-all"
 								}
 								size={24}
-								color="#fff"
+								color={colors.text}
 							/>
 						</TouchableOpacity>
 						<TouchableOpacity onPress={handleDeleteSelected}>
@@ -156,7 +169,7 @@ export default function ListScreen() {
 					<MaterialIcons name="list-alt" size={64} color="#3f3f46" />
 					<Text className="text-gray-500 text-lg mt-4">No lists yet</Text>
 					<Text className="text-gray-600 text-sm mt-2">
-						Tap + to create your first list
+						Tap + to create a list
 					</Text>
 				</View>
 			) : (

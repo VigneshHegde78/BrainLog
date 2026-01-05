@@ -1,5 +1,6 @@
 import { FloatingButton } from "@/components/FloatingButton";
 import { useNotes } from "@/context/NoteContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Note, getVisibleTags } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -19,6 +20,7 @@ export default function NoteScreen() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectionMode, setSelectionMode] = useState(false);
 	const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
+	const { colors, isDark } = useTheme();
 
 	// Filter to show only non-private notes
 	const publicNotes = notes.filter((note) => note.isPrivate !== true);
@@ -81,8 +83,8 @@ export default function NoteScreen() {
 				}
 			}}
 			onLongPress={() => handleLongPress(item.id)}
-			className="bg-zinc-900 p-5 rounded-3xl mb-3 overflow-hidden relative"
-			style={{ minHeight: 100, maxHeight: 250 }}
+			className="p-5 rounded-3xl mb-3 overflow-hidden relative"
+			style={{ minHeight: 100, maxHeight: 250, backgroundColor: colors.card }}
 		>
 			{/* Checkbox for selection mode */}
 			{selectionMode && (
@@ -91,7 +93,9 @@ export default function NoteScreen() {
 						className={`w-6 h-6 rounded-full items-center justify-center ${
 							selectedNotes.includes(item.id)
 								? "bg-red-500"
-								: "bg-zinc-700 border-2 border-zinc-500"
+								: isDark
+									? "bg-zinc-700 border-2 border-zinc-500"
+									: "bg-white border-2 border-zinc-300"
 						}`}
 					>
 						{selectedNotes.includes(item.id) && (
@@ -102,7 +106,10 @@ export default function NoteScreen() {
 			)}
 			{/* Header: Title + Delete Button */}
 			<View className="flex-row justify-between items-start mb-2">
-				<Text className="text-white text-lg font-bold flex-1 mr-2">
+				<Text
+					className="text-lg font-bold flex-1 mr-2"
+					style={{ color: colors.text }}
+				>
 					{item.title}
 				</Text>
 
@@ -118,8 +125,9 @@ export default function NoteScreen() {
 			</View>
 
 			<Text
-				className="text-gray-400 text-base font-medium whitespace-pre-wrap leading-6 mb-4"
+				className="text-base font-medium whitespace-pre-wrap leading-6 mb-4"
 				numberOfLines={6}
+				style={{ color: colors.text2 }}
 			>
 				{item.content}
 			</Text>
@@ -127,7 +135,12 @@ export default function NoteScreen() {
 			<View className="flex-row flex-wrap gap-2 mt-auto">
 				{getVisibleTags(item.tags).map((tag) => (
 					<View key={tag} className="bg-black/40 px-2 py-1 rounded-md">
-						<Text className="text-red-400 text-xs font-medium">{tag}</Text>
+						<Text
+							className="text-xs font-medium"
+							style={{ color: colors.tint }}
+						>
+							{tag}
+						</Text>
 					</View>
 				))}
 			</View>
@@ -135,14 +148,20 @@ export default function NoteScreen() {
 	);
 
 	return (
-		<View className="flex-1 bg-black py-2 px-4 relative">
+		<View
+			className="flex-1 py-2 px-4 relative"
+			style={{ backgroundColor: colors.background }}
+		>
 			{/* Selection Mode Header */}
 			{selectionMode && (
-				<View className="flex-row items-center justify-between mb-3 bg-zinc-900 p-3 rounded-2xl">
+				<View
+					className="flex-row items-center justify-between mb-3 p-3 rounded-2xl"
+					style={{ backgroundColor: colors.card }}
+				>
 					<TouchableOpacity onPress={handleCancelSelection}>
-						<MaterialIcons name="close" size={24} color="white" />
+						<MaterialIcons name="close" size={24} color={colors.text} />
 					</TouchableOpacity>
-					<Text className="text-white font-semibold">
+					<Text className="font-semibold" style={{ color: colors.text }}>
 						{selectedNotes.length} selected
 					</Text>
 					<View className="flex-row gap-3">
@@ -174,15 +193,19 @@ export default function NoteScreen() {
 			)}
 
 			{/* Search Bar */}
-			<View className="mb-4 bg-zinc-900 rounded-2xl flex-row items-center px-4 py-1 border border-zinc-800">
+			<View
+				className={`mb-4 rounded-2xl flex-row items-center px-4 py-1 border ${isDark ? "border-zinc-800" : "border-zinc-300"}`}
+				style={{ backgroundColor: colors.card }}
+			>
 				<MaterialIcons name="search" size={24} color="#71717a" />
 				<TextInput
-					className="flex-1 text-white text-base ml-3 font-medium"
+					className="flex-1 text-base ml-3 font-medium"
 					placeholder="Search notes or #tags..."
 					placeholderTextColor="#71717a"
 					value={searchQuery}
 					onChangeText={setSearchQuery}
 					autoCapitalize="none"
+					style={{ color: colors.text }}
 				/>
 				{searchQuery.length > 0 && (
 					<TouchableOpacity onPress={() => setSearchQuery("")}>
@@ -197,8 +220,20 @@ export default function NoteScreen() {
 			>
 				{filteredNotes.length === 0 ? (
 					<View className="flex-1 mt-48 justify-center items-center opacity-50">
-						<MaterialIcons name="sticky-note-2" size={48} color="white" />
-						<Text className="text-white mt-4 font-medium">No notes found</Text>
+						<MaterialIcons
+							name="sticky-note-2"
+							size={48}
+							color={colors.text2}
+						/>
+						<Text className="mt-4 font-medium" style={{ color: colors.text }}>
+							No notes found
+						</Text>
+						<Text
+							className="mt-2 text-center px-10"
+							style={{ color: colors.text }}
+						>
+							Tap + to create a new note.
+						</Text>
 					</View>
 				) : (
 					<View className="flex-row justify-between">

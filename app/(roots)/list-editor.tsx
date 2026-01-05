@@ -1,4 +1,5 @@
 import { useList } from "@/context/ListContext";
+import { useTheme } from "@/context/ThemeContext";
 import { ListItem } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -18,6 +19,7 @@ export default function ListEditor() {
 	const { id } = useLocalSearchParams();
 	const router = useRouter();
 	const { addList, updateList, deleteList, getListById } = useList();
+	const { colors, isDark, toggleTheme } = useTheme();
 
 	const [title, setTitle] = useState("");
 	const [items, setItems] = useState<ListItem[]>([]);
@@ -90,11 +92,17 @@ export default function ListEditor() {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-black">
+		<SafeAreaView
+			className="flex-1"
+			style={{ backgroundColor: colors.background }}
+		>
 			{/* Header */}
-			<View className="flex-row items-center justify-between px-4 py-3 border-b border-zinc-800">
+			<View
+				className="flex-row items-center justify-between px-4 py-3 border-b "
+				style={{ borderBottomColor: colors.card }}
+			>
 				<TouchableOpacity onPress={() => router.back()}>
-					<MaterialIcons name="arrow-back" size={24} color="#fff" />
+					<MaterialIcons name="arrow-back" size={24} color={colors.text} />
 				</TouchableOpacity>
 
 				<View className="flex-row items-center gap-4">
@@ -103,7 +111,7 @@ export default function ListEditor() {
 							<MaterialIcons name="delete" size={24} color="#ef4444" />
 						</TouchableOpacity>
 					)}
-					<TouchableOpacity onPress={handleSave}>
+					<TouchableOpacity onPress={toggleTheme}>
 						<MaterialIcons name="check" size={24} color="#10b981" />
 					</TouchableOpacity>
 				</View>
@@ -112,7 +120,8 @@ export default function ListEditor() {
 			<ScrollView className="flex-1 p-4">
 				{/* Title Input */}
 				<TextInput
-					className="text-white text-2xl font-bold mb-6"
+					className=" text-2xl font-bold mb-6"
+					style={{ color: colors.text }}
 					placeholder="List Title"
 					placeholderTextColor="#71717a"
 					value={title}
@@ -125,7 +134,8 @@ export default function ListEditor() {
 					{items.map((item) => (
 						<View
 							key={item.id}
-							className="flex-row items-center bg-zinc-900 p-3 rounded-2xl mb-2"
+							className="flex-row items-center p-3 rounded-2xl mb-2"
+							style={{ backgroundColor: colors.card }}
 						>
 							<TouchableOpacity onPress={() => handleToggleItem(item.id)}>
 								<MaterialIcons
@@ -138,8 +148,9 @@ export default function ListEditor() {
 							</TouchableOpacity>
 
 							<Text
-								className="flex-1 text-white text-base ml-3"
+								className="flex-1 text-base ml-3"
 								style={{
+									color: colors.text,
 									textDecorationLine: item.completed ? "line-through" : "none",
 									opacity: item.completed ? 0.5 : 1,
 								}}
@@ -155,10 +166,14 @@ export default function ListEditor() {
 				</View>
 
 				{/* Add New Item */}
-				<View className="flex-row items-center bg-zinc-900 rounded-2xl px-4 py-2">
+				<View
+					className="flex-row items-center rounded-2xl px-4 py-2"
+					style={{ backgroundColor: colors.card }}
+				>
 					<MaterialIcons name="add" size={24} color="#71717a" />
 					<TextInput
-						className="flex-1 text-white text-base ml-3"
+						className="flex-1 text-base ml-3"
+						style={{ color: colors.text }}
 						placeholder="Add item..."
 						placeholderTextColor="#71717a"
 						value={newItemText}
