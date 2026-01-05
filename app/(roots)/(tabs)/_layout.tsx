@@ -1,22 +1,49 @@
 import { useTheme } from "@/context/ThemeContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Slot, usePathname, useRouter } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Import the Auth Screen we built
+import AuthScreen from "../../(auth)/auth-screen";
 
 export default function RootLayout() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const { colors, toggleTheme, isDark } = useTheme();
 
+	// --- NEW: AUTH STATE ---
+	const [isUnlocked, setIsUnlocked] = useState(false);
+
+	// --- NEW: PRIVATE NOTES AUTH STATE ---
+	const [showPrivateAuth, setShowPrivateAuth] = useState(false);
+
+	// --- NEW: THE LOCK CHECK ---
+	// If NOT unlocked, show the Lock Screen and stop here.
+	if (!isUnlocked) {
+		return <AuthScreen onUnlock={() => setIsUnlocked(true)} />;
+	}
+
+	// Handler for long press on Notes to access Private Notes
+	const handleNotesLongPress = () => {
+		setShowPrivateAuth(true);
+	};
+
+	// Handler for successful private notes authentication
+	const handlePrivateUnlock = () => {
+		setShowPrivateAuth(false);
+		router.push("/private");
+	};
+
+	// --- BELOW IS YOUR ORIGINAL APP CODE (Runs only after unlock) ---
+
 	const NavCapsule = ({ label, route }: { label: string; route: any }) => {
 		const isActive = pathname.includes(route);
 		return (
 			<TouchableOpacity
 				onPress={() => router.push(route)}
-				onLongPress={() =>
-					route === "/notes" ? router.push("/(roots)/private-auth") : null
-				}
+				onLongPress={() => (route === "/notes" ? handleNotesLongPress() : null)}
 				className={`w-28 h-10 flex-row items-center justify-center rounded-full ${
 					isActive ? "bg-red-500" : isDark ? "bg-white" : "bg-gray-700"
 				}`}
@@ -70,23 +97,50 @@ export default function RootLayout() {
 
 			{/* Content Area */}
 			<View className="flex-1 relative">
-				{/* 'relative' ensures children using absolute positioning stay inside this box */}
 				<Slot />
 			</View>
 
 			<TouchableOpacity
 				className="w-full justify-center items-center"
-				onPress={() => router.push("https://github.com/vhx")}
+				onPress={() => router.push("https://github.com/VigneshHegde78")}
 			>
 				<Text
-					className="font-serif text-xs font-bold"
+					className="font-serif text-xs font-bold mb-1"
 					style={{ color: colors.text }}
 				>
 					Made with ❤️ by Vignesh.
 				</Text>
 			</TouchableOpacity>
 
-			{/* DELETED THE FAB FROM HERE */}
+			{/* Modal for Private Notes Authentication */}
+			<Modal
+				visible={showPrivateAuth}
+				transparent={true}
+				animationType="fade"
+				onRequestClose={() => setShowPrivateAuth(false)}
+			>
+				<View className="flex-1 bg-black/50">
+					<View
+						className="flex-1 dark:bg-black overflow-hidden"
+						style={{ backgroundColor: colors.background }}
+					>
+						<View className="flex-row justify-between items-center p-4 border-b">
+							<Text
+								className="text-xl font-bold"
+								style={{ color: colors.text }}
+							>
+								Private Notes
+							</Text>
+							<TouchableOpacity onPress={() => setShowPrivateAuth(false)}>
+								<MaterialIcons name="close" size={24} color="red" />
+							</TouchableOpacity>
+						</View>
+						<View className="flex-1">
+							<AuthScreen onUnlock={handlePrivateUnlock} />
+						</View>
+					</View>
+				</View>
+			</Modal>
 		</SafeAreaView>
 	);
 }

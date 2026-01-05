@@ -34,24 +34,6 @@ export default function RootLayout() {
 						headerShown: false,
 					}}
 				/>
-				<Stack.Screen
-					name="security-setup"
-					options={{
-						headerShown: false,
-					}}
-				/>
-				<Stack.Screen
-					name="private-auth"
-					options={{
-						headerShown: false,
-					}}
-				/>
-				<Stack.Screen
-					name="password-reset"
-					options={{
-						headerShown: false,
-					}}
-				/>
 
 				<Stack.Screen
 					name="deleted"

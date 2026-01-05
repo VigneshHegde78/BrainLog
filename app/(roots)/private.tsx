@@ -1,10 +1,10 @@
 import { FloatingButton } from "@/components/FloatingButton";
 import { useNotes } from "@/context/NoteContext";
-import { useSecurity } from "@/context/SecurityContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Note, getAllTags } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
 	ScrollView,
 	Text,
@@ -17,16 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function PrivateNotes() {
 	const router = useRouter();
 	const { notes, moveToTrash, moveMultipleToTrash } = useNotes();
-	const { isSetup, isAuthenticated } = useSecurity();
-
-	useEffect(() => {
-		// Check authentication status on mount
-		if (!isSetup) {
-			router.replace("/(roots)/security-setup");
-		} else if (!isAuthenticated) {
-			router.replace("/(roots)/private-auth");
-		}
-	}, [isSetup, isAuthenticated, router]);
+	const { colors, toggleTheme, isDark } = useTheme();
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -100,8 +91,8 @@ export default function PrivateNotes() {
 				}
 			}}
 			onLongPress={() => handleLongPress(item.id)}
-			className="bg-zinc-900 p-5 rounded-3xl mb-3 overflow-hidden relative"
-			style={{ minHeight: 100, maxHeight: 250 }}
+			className=" p-5 rounded-3xl mb-3 overflow-hidden relative"
+			style={{ backgroundColor: colors.card, minHeight: 100, maxHeight: 250 }}
 		>
 			{/* Checkbox for selection mode */}
 			{selectionMode && (
@@ -121,7 +112,10 @@ export default function PrivateNotes() {
 			)}
 			{/* Header: Title + Delete Button */}
 			<View className="flex-row justify-between items-start mb-2">
-				<Text className="text-white text-lg font-bold flex-1 mr-2">
+				<Text
+					className=" text-lg font-bold flex-1 mr-2"
+					style={{ color: colors.text }}
+				>
 					{item.title}
 				</Text>
 
@@ -137,7 +131,8 @@ export default function PrivateNotes() {
 			</View>
 
 			<Text
-				className="text-gray-400 text-base font-medium whitespace-pre-wrap leading-6 mb-4"
+				className=" text-base font-medium whitespace-pre-wrap leading-6 mb-4"
+				style={{ color: colors.text2 }}
 				numberOfLines={6}
 			>
 				{item.content}
@@ -162,7 +157,10 @@ export default function PrivateNotes() {
 	);
 
 	return (
-		<SafeAreaView className="flex-1 bg-black py-2 px-4 relative">
+		<SafeAreaView
+			className="flex-1 py-2 px-4 relative"
+			style={{ backgroundColor: colors.background }}
+		>
 			{/* Selection Mode Header */}
 			{selectionMode && (
 				<View className="flex-row items-center justify-between mb-3 bg-zinc-900 p-3 rounded-2xl">
@@ -204,10 +202,14 @@ export default function PrivateNotes() {
 				Private
 			</Text>
 			{/* Search Bar */}
-			<View className="mb-4 bg-zinc-900 rounded-2xl flex-row items-center px-4 py-1 border border-zinc-800">
+			<View
+				className="mb-4 rounded-2xl flex-row items-center px-4 py-1 border border-zinc-800"
+				style={{ borderColor: colors.card, backgroundColor: colors.card }}
+			>
 				<MaterialIcons name="search" size={24} color="#71717a" />
 				<TextInput
-					className="flex-1 text-white text-base ml-3 font-medium"
+					className="flex-1 text-base ml-3 font-medium"
+					style={{ color: colors.text }}
 					placeholder="Search notes or #tags..."
 					placeholderTextColor="#71717a"
 					value={searchQuery}
@@ -242,8 +244,14 @@ export default function PrivateNotes() {
 			>
 				{filteredNotes.length === 0 ? (
 					<View className="mt-20 items-center opacity-50">
-						<MaterialIcons name="sticky-note-2" size={48} color="white" />
-						<Text className="text-white mt-4 font-medium">No notes found</Text>
+						<MaterialIcons
+							name="sticky-note-2"
+							size={48}
+							color={colors.text2}
+						/>
+						<Text className="mt-4 font-medium" style={{ color: colors.text2 }}>
+							No notes found
+						</Text>
 					</View>
 				) : (
 					<View className="flex-row justify-between">
@@ -261,7 +269,14 @@ export default function PrivateNotes() {
 				)}
 			</ScrollView>
 
-			<FloatingButton onPress={() => router.push("/note-editor")} />
+			<TouchableOpacity
+				className="w-full items-center justify-center"
+				onPress={() => router.push("https://github.com/VigneshHegde78")}
+			>
+				<Text style={{ color: colors.text }}>Made with ❤️ by Vignesh</Text>
+			</TouchableOpacity>
+
+			<FloatingButton onPress={toggleTheme} />
 		</SafeAreaView>
 	);
 }
