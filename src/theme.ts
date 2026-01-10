@@ -1,7 +1,7 @@
 export const lightTheme = {
-	background: "#FFFFFF",
+	background: "#ffffff",
 	text: "#000000",
-	card: "#CBCBCB",
+	card: "#ebebeb",
 	tint: "#EF0000", // Action color
 	text2: "#71717a", // Secondary text color
 };

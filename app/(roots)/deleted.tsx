@@ -1,4 +1,5 @@
 import { useNotes } from "@/context/NoteContext"; // Import context
+import { useTheme } from "@/context/ThemeContext";
 import { Note } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -14,6 +15,7 @@ export default function RecentlyDeleted() {
 	} = useNotes();
 	const [selectionMode, setSelectionMode] = useState(false);
 	const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
+	const { colors } = useTheme();
 
 	const calculateDaysLeft = (deletedDate?: Date) => {
 		if (!deletedDate) return 30;
@@ -98,7 +100,8 @@ export default function RecentlyDeleted() {
 				}
 			}}
 			onLongPress={() => handleLongPress(item.id)}
-			className="bg-zinc-900 p-4 rounded-2xl mb-3 flex-row justify-between items-center"
+			className=" p-4 rounded-2xl mb-3 flex-row justify-between items-center"
+			style={{ backgroundColor: colors.card }}
 		>
 			{/* Checkbox for selection mode */}
 			{selectionMode && (
@@ -117,13 +120,21 @@ export default function RecentlyDeleted() {
 				</View>
 			)}
 			<View className="flex-1 pr-4">
-				<Text className="text-white font-bold text-lg mb-1" numberOfLines={1}>
+				<Text
+					className="font-bold text-lg mb-1"
+					numberOfLines={1}
+					style={{ color: colors.text }}
+				>
 					{item.title}
 				</Text>
-				<Text className="text-zinc-500 text-sm mb-2" numberOfLines={1}>
+				<Text
+					className="text-zinc-500 text-sm mb-2"
+					numberOfLines={1}
+					style={{ color: colors.text2 }}
+				>
 					{item.content}
 				</Text>
-				<Text className="text-red-400 text-xs">
+				<Text className="text-xs" style={{ color: colors.tint }}>
 					Auto-deletes in {calculateDaysLeft(item.deletedAt)} days
 				</Text>
 			</View>
@@ -152,14 +163,20 @@ export default function RecentlyDeleted() {
 	);
 
 	return (
-		<View className="flex-1 bg-black px-4 py-2">
+		<View
+			className="flex-1 px-4 py-2"
+			style={{ backgroundColor: colors.background }}
+		>
 			{/* Selection Mode Header */}
 			{selectionMode && (
-				<View className="flex-row items-center justify-between mb-3 bg-zinc-900 p-3 rounded-2xl">
+				<View
+					className="flex-row items-center justify-between mb-3 p-3 rounded-2xl"
+					style={{ backgroundColor: colors.card }}
+				>
 					<TouchableOpacity onPress={handleCancelSelection}>
-						<MaterialIcons name="close" size={24} color="white" />
+						<MaterialIcons name="close" size={24} color={colors.text} />
 					</TouchableOpacity>
-					<Text className="text-white font-semibold">
+					<Text className="font-semibold" style={{ color: colors.text }}>
 						{selectedNotes.length} selected
 					</Text>
 					<View className="flex-row gap-3">
@@ -219,9 +236,16 @@ export default function RecentlyDeleted() {
 				showsVerticalScrollIndicator={false}
 				contentContainerStyle={{ paddingBottom: 100 }}
 				ListEmptyComponent={() => (
-					<View className="mt-20 items-center justify-center">
-						<MaterialIcons name="delete-outline" size={64} color="#3f3f46" />
-						<Text className="text-zinc-600 text-lg mt-4 font-medium">
+					<View className="items-center justify-center pt-40 opacity-50">
+						<MaterialIcons
+							name="delete-outline"
+							size={64}
+							color={colors.text}
+						/>
+						<Text
+							className=" text-lg mt-4 font-medium"
+							style={{ color: colors.text }}
+						>
 							Trash is empty
 						</Text>
 					</View>

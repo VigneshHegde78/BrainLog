@@ -12,7 +12,7 @@ export default function ListScreen() {
 	const router = useRouter();
 	const [selectionMode, setSelectionMode] = useState(false);
 	const [selectedLists, setSelectedLists] = useState<string[]>([]);
-	const { colors, isDark } = useTheme();
+	const { colors } = useTheme();
 
 	// Split into two columns for the masonry layout
 	const leftColumn = lists.filter((_, i) => i % 2 === 0);
@@ -165,10 +165,22 @@ export default function ListScreen() {
 			)}
 
 			{lists.length === 0 ? (
-				<View className="flex-1 justify-center items-center">
-					<MaterialIcons name="list-alt" size={64} color="#3f3f46" />
-					<Text className="text-gray-500 text-lg mt-4">No lists yet</Text>
-					<Text className="text-gray-600 text-sm mt-2">
+				<View className="flex-1 justify-center items-center opacity-50">
+					<MaterialIcons
+						name="format-list-bulleted"
+						size={48}
+						color={colors.text}
+					/>
+					<Text
+						className="text-gray-500 text-lg mt-4"
+						style={{ color: colors.text }}
+					>
+						No lists yet
+					</Text>
+					<Text
+						className="text-gray-600 text-sm mt-2 pb-20"
+						style={{ color: colors.text }}
+					>
 						Tap + to create a list
 					</Text>
 				</View>

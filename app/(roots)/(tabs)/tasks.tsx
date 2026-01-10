@@ -5,7 +5,6 @@ import { Task } from "@/types";
 import { MaterialIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
-import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	KeyboardAvoidingView,
@@ -36,7 +35,7 @@ interface TaskSection {
 }
 
 export default function TaskScreen() {
-	const router = useRouter();
+	
 	const {
 		tasks: allTasks,
 		addTask,
@@ -336,10 +335,13 @@ export default function TaskScreen() {
 				stickySectionHeadersEnabled={false}
 				contentContainerStyle={{ flexGrow: 1 }}
 				ListEmptyComponent={() => (
-					<View className="flex-1 justify-center items-center mb-20">
-						<MaterialIcons name="playlist-add" size={64} color="#52525b" />
-						<Text className="text-zinc-500 text-lg font-medium mt-4">
+					<View className="flex-1 justify-center items-center mb-20 opacity-50">
+						<MaterialIcons name="playlist-add" size={48} color={colors.text} />
+						<Text className="font-medium mt-4" style={{ color: colors.text }}>
 							No tasks found
+						</Text>
+						<Text className="text-center text-sm mt-2 px-10" style={{ color: colors.text }}>
+							Tap + to add a task
 						</Text>
 					</View>
 				)}

@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function PrivateNotes() {
 	const router = useRouter();
 	const { notes, moveToTrash, moveMultipleToTrash } = useNotes();
-	const { colors, toggleTheme, isDark } = useTheme();
+	const { colors, toggleTheme } = useTheme();
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -273,7 +273,12 @@ export default function PrivateNotes() {
 				className="w-full items-center justify-center"
 				onPress={() => router.push("https://github.com/VigneshHegde78")}
 			>
-				<Text style={{ color: colors.text }}>Made with ❤️ by Vignesh</Text>
+				<Text
+					className="font-serif text-xs font-bold mb-1"
+					style={{ color: colors.text2 }}
+				>
+					Made with ❤️ by Vignesh
+				</Text>
 			</TouchableOpacity>
 
 			<FloatingButton onPress={toggleTheme} />

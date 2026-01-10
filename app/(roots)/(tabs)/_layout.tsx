@@ -106,7 +106,7 @@ export default function RootLayout() {
 			>
 				<Text
 					className="font-serif text-xs font-bold mb-1"
-					style={{ color: colors.text }}
+					style={{ color: colors.text2 }}
 				>
 					Made with ❤️ by Vignesh.
 				</Text>

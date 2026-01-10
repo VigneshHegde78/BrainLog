@@ -19,7 +19,7 @@ export default function ListEditor() {
 	const { id } = useLocalSearchParams();
 	const router = useRouter();
 	const { addList, updateList, deleteList, getListById } = useList();
-	const { colors, isDark, toggleTheme } = useTheme();
+	const { colors } = useTheme();
 
 	const [title, setTitle] = useState("");
 	const [items, setItems] = useState<ListItem[]>([]);
@@ -34,7 +34,7 @@ export default function ListEditor() {
 				setItems(existingList.items);
 			}
 		}
-	}, [id]);
+	}, [getListById, id]);
 
 	const handleAddItem = () => {
 		if (newItemText.trim()) {
@@ -111,7 +111,7 @@ export default function ListEditor() {
 							<MaterialIcons name="delete" size={24} color="#ef4444" />
 						</TouchableOpacity>
 					)}
-					<TouchableOpacity onPress={toggleTheme}>
+					<TouchableOpacity onPress={handleSave}>
 						<MaterialIcons name="check" size={24} color="#10b981" />
 					</TouchableOpacity>
 				</View>

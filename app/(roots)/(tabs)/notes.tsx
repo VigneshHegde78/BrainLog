@@ -84,7 +84,11 @@ export default function NoteScreen() {
 			}}
 			onLongPress={() => handleLongPress(item.id)}
 			className="p-5 rounded-3xl mb-3 overflow-hidden relative"
-			style={{ minHeight: 100, maxHeight: 250, backgroundColor: colors.card }}
+			style={{
+				minHeight: 100,
+				maxHeight: "auto",
+				backgroundColor: colors.card,
+			}}
 		>
 			{/* Checkbox for selection mode */}
 			{selectionMode && (
@@ -169,11 +173,15 @@ export default function NoteScreen() {
 							onPress={handleSelectAll}
 							className="bg-zinc-800 px-3 py-2 rounded-full"
 						>
-							<Text className="text-white text-sm font-medium">
-								{selectedNotes.length === filteredNotes.length
-									? "Deselect All"
-									: "Select All"}
-							</Text>
+							<MaterialIcons
+								name={
+									selectedNotes.length === filteredNotes.length
+										? "deselect"
+										: "select-all"
+								}
+								size={20}
+								color="white"
+							/>
 						</TouchableOpacity>
 						<TouchableOpacity
 							onPress={handleDeleteSelected}
@@ -229,10 +237,10 @@ export default function NoteScreen() {
 							No notes found
 						</Text>
 						<Text
-							className="mt-2 text-center px-10"
+							className="mt-2 text-center text-sm px-10"
 							style={{ color: colors.text }}
 						>
-							Tap + to create a new note.
+							Tap + to add a note
 						</Text>
 					</View>
 				) : (
