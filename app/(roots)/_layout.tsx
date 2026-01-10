@@ -38,6 +38,27 @@ export default function RootLayout() {
 				/>
 
 				<Stack.Screen
+					name="settings"
+					options={{
+						headerShown: false,
+					}}
+				/>
+
+				<Stack.Screen
+					name="help"
+					options={{
+						headerShown: false,
+					}}
+				/>
+
+				<Stack.Screen
+					name="guides"
+					options={{
+						headerShown: false,
+					}}
+				/>
+
+				<Stack.Screen
 					name="deleted"
 					options={{
 						title: "Recently Deleted",

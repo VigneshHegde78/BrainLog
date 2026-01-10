@@ -24,6 +24,7 @@ interface NoteContextType {
 		isPrivate?: boolean
 	) => void;
 	togglePrivate: (id: string) => void; // Toggle private status
+	replaceAll: (notes: Note[], trash: Note[]) => void; // Replace entire dataset
 }
 
 const NoteContext = createContext<NoteContextType | undefined>(undefined);
@@ -214,6 +215,13 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
 		);
 	};
 
+	// Replace all notes and trash (used by restore)
+	const replaceAll = (newNotes: Note[], newTrash: Note[]) => {
+		setNotes(newNotes ?? []);
+		setTrash(newTrash ?? []);
+		setIsInitialized(true);
+	};
+
 	return (
 		<NoteContext.Provider
 			value={{
@@ -228,6 +236,7 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
 				permanentlyDeleteMultiple,
 				updateNote,
 				togglePrivate,
+				replaceAll,
 			}}
 		>
 			{children}

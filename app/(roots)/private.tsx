@@ -6,6 +6,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+	Linking,
 	ScrollView,
 	Text,
 	TextInput,
@@ -271,7 +272,7 @@ export default function PrivateNotes() {
 
 			<TouchableOpacity
 				className="w-full items-center justify-center"
-				onPress={() => router.push("https://github.com/VigneshHegde78")}
+				onPress={() => Linking.openURL("https://github.com/VigneshHegde78")}
 			>
 				<Text
 					className="font-serif text-xs font-bold mb-1"

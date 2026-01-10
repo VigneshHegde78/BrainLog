@@ -2,7 +2,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Slot, usePathname, useRouter } from "expo-router";
 import { useState } from "react";
-import { Modal, Text, TouchableOpacity, View } from "react-native";
+import { Linking, Modal, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Import the Auth Screen we built
@@ -73,19 +73,10 @@ export default function RootLayout() {
 						&ensp;BrainLog
 					</Text>
 				</Text>
-				<View className="flex-row gap-4">
-					<TouchableOpacity>
-						<MaterialIcons
-							name={isDark ? "dark-mode" : "light-mode"}
-							size={28}
-							color="red"
-							onPress={toggleTheme}
-						/>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={() => router.push("/deleted")}>
-						<MaterialIcons name="delete-outline" size={28} color="red" />
-					</TouchableOpacity>
-				</View>
+
+				<TouchableOpacity onPress={() => router.push("/settings")}>
+					<MaterialIcons name="more-vert" size={28} color="red" />
+				</TouchableOpacity>
 			</View>
 
 			{/* Navigation */}
@@ -102,7 +93,7 @@ export default function RootLayout() {
 
 			<TouchableOpacity
 				className="w-full justify-center items-center"
-				onPress={() => router.push("https://github.com/VigneshHegde78")}
+				onPress={() => Linking.openURL("https://github.com/VigneshHegde78")}
 			>
 				<Text
 					className="font-serif text-xs font-bold mb-1"

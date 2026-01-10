@@ -9,6 +9,7 @@ interface TaskContextType {
 	deleteTask: (id: string) => void;
 	deleteMultipleTasks: (ids: string[]) => void;
 	toggleTaskCompletion: (id: string) => void;
+	replaceAll: (tasks: Task[]) => void;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -112,6 +113,11 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 		);
 	};
 
+	const replaceAll = (newTasks: Task[]) => {
+		setTasks(newTasks ?? []);
+		setIsInitialized(true);
+	};
+
 	return (
 		<TaskContext.Provider
 			value={{
@@ -121,6 +127,7 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 				deleteTask,
 				deleteMultipleTasks,
 				toggleTaskCompletion,
+				replaceAll,
 			}}
 		>
 			{children}

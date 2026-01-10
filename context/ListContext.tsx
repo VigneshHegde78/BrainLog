@@ -9,6 +9,7 @@ interface ListContextType {
 	deleteList: (id: string) => void;
 	deleteMultipleLists: (ids: string[]) => void;
 	getListById: (id: string) => List | undefined;
+	replaceAll: (lists: List[]) => void;
 }
 
 const ListContext = createContext<ListContextType | undefined>(undefined);
@@ -166,6 +167,11 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
 		return lists.find((list) => list.id === id);
 	};
 
+	const replaceAll = (newLists: List[]) => {
+		setLists(newLists ?? []);
+		setIsInitialized(true);
+	};
+
 	return (
 		<ListContext.Provider
 			value={{
@@ -175,6 +181,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
 				deleteList,
 				deleteMultipleLists,
 				getListById,
+				replaceAll,
 			}}
 		>
 			{children}

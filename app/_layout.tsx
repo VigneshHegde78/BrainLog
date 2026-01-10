@@ -22,13 +22,6 @@ export default function AppLayout() {
 								headerShown: false,
 							}}
 						/>
-
-						<Stack.Screen
-							name="(auth)/verify-auth"
-							options={{
-								headerShown: false,
-							}}
-						/>
 					</Stack>
 				</TaskProvider>
 			</ListProvider>
