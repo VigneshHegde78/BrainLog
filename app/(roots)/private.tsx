@@ -198,8 +198,8 @@ export default function PrivateNotes() {
 				</View>
 			)}
 
-			<Text className="text-4xl text-[#ef4444] font-serif font-semibold mb-4">
-				Private
+			<Text className="text-3xl text-[#ef4444] font-serif font-semibold mb-4">
+				Private Notes
 			</Text>
 			{/* Search Bar */}
 			<View

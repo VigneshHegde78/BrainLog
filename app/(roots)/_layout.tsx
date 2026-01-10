@@ -1,8 +1,10 @@
 import { NoteProvider } from "@/context/NoteContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Stack } from "expo-router";
 import React from "react";
 
 export default function RootLayout() {
+	const { isDark, colors } = useTheme();
 	return (
 		<NoteProvider>
 			<Stack>
@@ -41,7 +43,7 @@ export default function RootLayout() {
 						title: "Recently Deleted",
 						animation: "slide_from_right",
 						headerStyle: {
-							backgroundColor: "black",
+							backgroundColor: colors.background,
 						},
 						headerTitleStyle: {
 							color: "red",

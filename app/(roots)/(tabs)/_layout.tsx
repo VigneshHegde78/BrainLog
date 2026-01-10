@@ -65,7 +65,7 @@ export default function RootLayout() {
 			style={{ backgroundColor: colors.background }}
 		>
 			{/* Header Area */}
-			<View className="h-0.5 w-full my-2 bg-gray-500" />
+			<View className="h-0.5 w-full bg-gray-500" />
 			<View className="p-4 justify-between flex-row items-center">
 				<Text className="text-4xl text-[#ef4444] font-serif font-semibold">
 					{pathname.replace(/\//g, "").replace(/^\w/, (c) => c.toUpperCase())}
