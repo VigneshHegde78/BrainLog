@@ -14,11 +14,15 @@ import {
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AuthScreen from "../(auth)/auth-screen";
 
 export default function PrivateNotes() {
 	const router = useRouter();
 	const { notes, moveToTrash, moveMultipleToTrash } = useNotes();
 	const { colors, toggleTheme } = useTheme();
+
+	// Gate access to private screen behind auth
+	const [isAuthorized, setIsAuthorized] = useState(false);
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -156,6 +160,11 @@ export default function PrivateNotes() {
 			</View>
 		</TouchableOpacity>
 	);
+
+	// Require authentication before showing private content
+	if (!isAuthorized) {
+		return <AuthScreen onUnlock={() => setIsAuthorized(true)} />;
+	}
 
 	return (
 		<SafeAreaView

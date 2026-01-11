@@ -19,33 +19,7 @@ const STORAGE_KEY = "@lists";
 const SAMPLE_LISTS: List[] = [
 	{
 		id: "sample-list-1",
-		title: "App Features",
-		items: [
-			{
-				id: "f1",
-				text: "Create and organize notes with tags",
-				completed: true,
-			},
-			{
-				id: "f2",
-				text: "Secure private notes with PIN/Pattern/Biometric",
-				completed: true,
-			},
-			{ id: "f3", text: "Task management with reminders", completed: true },
-			{ id: "f4", text: "Create custom lists and checklists", completed: true },
-			{
-				id: "f5",
-				text: "Homescreen widgets for quick access",
-				completed: false,
-			},
-			{ id: "f6", text: "Search across all notes", completed: true },
-			{ id: "f7", text: "Dark mode optimized interface", completed: true },
-		],
-		date: new Date("2026-01-04T10:00:00"),
-	},
-	{
-		id: "sample-list-2",
-		title: "How to Create and Manage Lists",
+		title: "How to Create and Manage Lists? 📋",
 		items: [
 			{
 				id: "l1",

@@ -12,28 +12,28 @@ export default function AuthScreen({ onUnlock }: { onUnlock: () => void }) {
 	const [mode, setMode] = useState<AuthMode>("CHECKING");
 	const [pin, setPin] = useState("");
 	const [message, setMessage] = useState("Loading...");
-	const { isDark, colors } = useTheme();
+	const { colors } = useTheme();
 
 	// 1. Initial Setup Check
 	useEffect(() => {
-		checkSetup();
-	}, []);
-
-	const checkSetup = async () => {
-		const hasPin = await hasPinConfigured();
-		if (!hasPin) {
-			setMode("CREATE_PIN");
-			setMessage("Create a 4-digit PIN");
-		} else {
-			// Try Biometrics first
-			const bioSuccess = await checkBiometrics();
-			if (bioSuccess) {
-				onUnlock(); // Success!
+		const checkSetup = async () => {
+			const hasPin = await hasPinConfigured();
+			if (!hasPin) {
+				setMode("CREATE_PIN");
+				setMessage("Create a 4-digit PIN");
 			} else {
-				setMode("BIOMETRIC"); // Show Biometric Icon with "Enter PIN" button
+				// Try Biometrics first
+				const bioSuccess = await checkBiometrics();
+				if (bioSuccess) {
+					onUnlock(); // Success!
+				} else {
+					setMode("BIOMETRIC"); // Show Biometric Icon with "Enter PIN" button
+				}
 			}
-		}
-	};
+		};
+
+		checkSetup();
+	}, [onUnlock]);
 
 	// 2. Handle PIN Input
 	const handlePress = async (num: string) => {
