@@ -97,7 +97,11 @@ export default function PrivateNotes() {
 			}}
 			onLongPress={() => handleLongPress(item.id)}
 			className=" p-5 rounded-3xl mb-3 overflow-hidden relative"
-			style={{ backgroundColor: colors.card, minHeight: 100, maxHeight: 250 }}
+			style={{
+				backgroundColor: colors.card,
+				minHeight: 100,
+				maxHeight: "100%",
+			}}
 		>
 			{/* Checkbox for selection mode */}
 			{selectionMode && (
