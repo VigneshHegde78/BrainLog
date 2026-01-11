@@ -14,7 +14,7 @@
   <p>
     <a href="#features">Features</a> •
     <a href="#tech-stack">Tech Stack</a> •
-    <a href="#getting-started">Getting Started</a> •
+    <a href="#getting-started">Getting Started</a>
   </p>
 
   <img src="https://img.shields.io/badge/status-stable-green?style=flat-square" alt="Status" />
