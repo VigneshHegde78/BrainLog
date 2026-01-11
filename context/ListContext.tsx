@@ -55,7 +55,7 @@ export const ListProvider = ({ children }: { children: React.ReactNode }) => {
 	// Load lists from AsyncStorage on mount
 	useEffect(() => {
 		// Uncomment the line below to reset and see sample lists
-		// AsyncStorage.removeItem(STORAGE_KEY).then(() => loadLists());
+		AsyncStorage.removeItem(STORAGE_KEY).then(() => loadLists());
 		loadLists();
 	}, []);
 

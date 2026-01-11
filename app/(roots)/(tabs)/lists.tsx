@@ -90,7 +90,7 @@ export default function ListScreen() {
 					{item.title || "Untitled List"}
 				</Text>
 
-				<View className="mt-3">
+				<View className="mt-3 mr-1">
 					{item.items && item.items.length > 0 ? (
 						item.items.slice(0, 5).map((listItem) => (
 							<View key={listItem.id} className="flex-row items-center mt-1">
